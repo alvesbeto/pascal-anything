@@ -25,6 +25,7 @@
 | Skeleton-only `record` | `scripts/record_python.py` runs the real module |
 | Missing MCP | `pascal-anything mcp` |
 | Agent discoverability | `llms.txt` |
+| README parity with upstream | Centered header, badges, agent paste + TIP, dual-license blurb, `docs/translations.md`; skip sponsors/Discord/npm/crates branding |
 
 ## Next
 

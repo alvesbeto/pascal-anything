@@ -1,31 +1,46 @@
-# Pascal Anything
+<h1 align="center">Pascal Anything</h1>
 
-[English](README.md)
+<p align="center">
+<a href="https://github.com/alvesbeto/pascal-anything/stargazers"><img src="https://img.shields.io/github/stars/alvesbeto/pascal-anything?style=flat&colorA=111111&colorB=005A9C&label=stars" alt="GitHub stars"></a>
+<a href="#licença"><img src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-111111?style=flat&colorA=111111&colorB=005A9C" alt="MIT or Apache-2.0 license"></a>
+<a href="https://www.freepascal.org/"><img src="https://img.shields.io/badge/Free%20Pascal-3.2%2B-111111?style=flat&colorA=111111&colorB=005A9C" alt="Free Pascal 3.2+"></a>
+<a href="https://www.lazarus-ide.org/"><img src="https://img.shields.io/badge/Lazarus-opcional-111111?style=flat&colorA=111111&colorB=005A9C" alt="Lazarus opcional"></a>
+</p>
 
-Reescreva seu app em **Free Pascal / Lazarus** e prove que o comportamento continua o mesmo.
+<p align="center">
+Reescreva seu app em Free Pascal / Lazarus e prove que o comportamento continua o mesmo.
+</p>
 
-Contraparte conceitual do [rust-anything](https://github.com/erkamyaman/rust-anything): o mesmo loop (`analyze` → `bridge` → `record` → `port` → `diff` → `gate`), com alvo em Pascal em vez de Rust.
+<p align="center">
+<b>Docs:</b> <a href="docs/how-it-works.md">como funciona</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a>
+</p>
+
+<p align="center"><a href="docs/translations.md">🌐 Outros idiomas</a> · <a href="README.md">English</a></p>
+
+<p align="center"><sub>Esta tradução pode ficar atrás do <a href="README.md">README em inglês</a>. Contraparte conceitual do <a href="https://github.com/erkamyaman/rust-anything">rust-anything</a> — mesmo loop verificado, alvo Pascal/Lazarus. Sem afiliação oficial.</sub></p>
 
 ## Início rápido
 
-Para um agente de código:
+Cole isto no seu agente de código:
 
 ```text
-Instale o Pascal Anything (compile com fpc em src/), rode pascal-anything setup.
-Rode pascal-anything go -- <comando lento deste app> e termine o port até pascal-anything gate passar.
+Install Pascal Anything: build with fpc under src/, put bin/pascalanything on PATH as pascal-anything, then run pascal-anything setup. Run pascal-anything go -- <slow command of this app> and finish the port until pascal-anything gate passes.
 ```
 
-Na máquina:
+Ou instale você mesmo:
 
 ```sh
 export PATH="$HOME/.local/bin:$HOME/.local/lib/fpc/3.2.2:$PATH"
 cd src && fpc -O2 -Fu. -FE../bin pascalanything.lpr
 ln -sfn "$(pwd)/../bin/pascalanything" "$HOME/.local/bin/pascal-anything"
 pascal-anything doctor
-pascal-anything setup
+pascal-anything setup           # skill + snippet MCP para Claude Code, Cursor, …
 ```
 
-## Loop
+> [!TIP]
+> **Agentes:** leiam [`llms.txt`](llms.txt) para instalação, todos os comandos e o fluxo de port.
+
+## O loop
 
 ```
 analyze → bridge → record → port.pas → build → diff → gate → enable
@@ -35,14 +50,14 @@ analyze → bridge → record → port.pas → build → diff → gate → enabl
 | --- | --- |
 | `analyze` | Mapa do repositório e ordem de migração → Pascal/Lazarus |
 | `bridge` | Pacote FPC com `src/port.pas` e `harness.lpr` |
-| `record` | Gera `cases.jsonl` a partir do original (Python executa o módulo de verdade) |
+| `record` | Gera `cases.jsonl` a partir do original (Python executa o módulo) |
 | `build` / `diff` | Compila o harness e compara os casos |
 | `gate` | Critério de pronto de uma unidade |
 | `go` | Atalho para a unidade candidata óbvia |
 | `setup` / `doctor` | Skill nos agentes + checagem de ferramentas |
 | `mcp` | Ferramentas MCP stdio dos mesmos passos |
 
-Agentes: leia [`llms.txt`](llms.txt).
+Mais detalhe: [`docs/how-it-works.md`](docs/how-it-works.md).
 
 ## Requisitos
 
@@ -63,6 +78,8 @@ pascal-anything gate  demo/slug-py/pascal/slug_pas
 
 ## Licença
 
-MIT OR Apache-2.0, mesma dual license da ideia original. Ports e código gerado no *seu* repositório são seus.
+Licenciado sob [MIT](./LICENSE-MIT) ou [Apache-2.0](./LICENSE-APACHE), à sua escolha. Ports e código gerado no seu repositório são seus.
 
-Inspirado em rust-anything © Erkam Yaman. Este projeto não é afiliado oficialmente.
+Salvo declaração explícita em contrário, qualquer contribuição que você envie de propósito para inclusão no pascal-anything, conforme a licença Apache-2.0, fica sob a dual license acima, sem termos adicionais.
+
+Inspirado em [rust-anything](https://github.com/erkamyaman/rust-anything) © [Erkam Yaman](https://github.com/erkamyaman). Este projeto não é afiliado oficialmente.
