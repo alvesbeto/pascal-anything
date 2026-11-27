@@ -1,8 +1,8 @@
 {
   "upstream": "https://github.com/erkamyaman/rust-anything",
-  "lastSeenSha": "a1208c35727bb8d701023fe8eec42988c652b343",
-  "lastSeenMessage": "README: total downloads badge (crates.io + npm) served by rustanything.ai",
-  "lastSeenAt": "2026-11-27T21:14:22Z",
-  "lastCheckedAt": "2026-11-27T21:16:50Z",
-  "notes": "Adapted CI concurrency settings to cancel superseded PR runs while keeping main runs serialized; skipped Rust-specific benchmarks, author profile, and website changes."
+  "lastSeenSha": "a1e9509b31bd89e0cbf039e86a39ca338d2c67fe",
+  "lastSeenMessage": "Website: back to void.json and asset-bypass, deploy with wrangler (void deploy dropped the static-file bypass)",
+  "lastSeenAt": "2026-11-27T21:25:36Z",
+  "lastCheckedAt": "2026-11-27T23:53:00Z",
+  "notes": "Evaluated commit a1e9509b31bd89e0cbf039e86a39ca338d2c67fe; skipped upstream Cloudflare/wrangler website deployment."
 }
