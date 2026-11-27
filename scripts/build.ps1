@@ -17,10 +17,10 @@ function Find-Fpc {
   if ($cmd) { return $cmd.Source }
 
   $candidates = @(
-    "C:\tools\freepascal\bin\i386-win32\fpc.exe",
     "C:\tools\freepascal\bin\x86_64-win64\fpc.exe",
-    "C:\FPC\3.2.2\bin\i386-win32\fpc.exe",
+    "C:\tools\freepascal\bin\i386-win32\fpc.exe",
     "C:\FPC\3.2.2\bin\x86_64-win64\fpc.exe",
+    "C:\FPC\3.2.2\bin\i386-win32\fpc.exe",
     "C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe",
     "C:\lazarus\fpc\3.2.2\bin\i386-win32\fpc.exe"
   )
@@ -36,8 +36,14 @@ if (-not $fpcExe) {
 }
 
 & $fpcExe -O2 "-Fu$Root\src" "-FE$Bin" "$Root\src\pascalanything.lpr"
+if ($LASTEXITCODE -ne 0) {
+  Write-Error "fpc failed with exit code $LASTEXITCODE"
+}
 
 $exe = Join-Path $Bin "pascalanything.exe"
+if (-not (Test-Path $exe)) {
+  Write-Error "expected binary missing: $exe"
+}
 Write-Host "built $exe"
 
 $localBin = Join-Path $env:USERPROFILE ".local\bin"

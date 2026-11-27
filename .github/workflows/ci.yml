@@ -35,41 +35,56 @@ jobs:
 
       - name: Install Free Pascal (Windows)
         if: runner.os == 'Windows'
-        run: choco install freepascal -y --no-progress
-
-      # Chocolatey updates Machine PATH, but the runner shell does not reload it.
-      - name: Add Free Pascal to PATH (Windows)
-        if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $candidates = @(
-            'C:\tools\freepascal\bin\i386-win32',
-            'C:\tools\freepascal\bin\x86_64-win64',
-            'C:\FPC\3.2.2\bin\i386-win32',
-            'C:\FPC\3.2.2\bin\x86_64-win64',
-            'C:\lazarus\fpc\3.2.2\bin\x86_64-win64',
-            'C:\lazarus\fpc\3.2.2\bin\i386-win32'
+          choco install freepascal -y --no-progress
+          # Prefer win64 compiler when the dual installer left it; else i386.
+          $roots = @('C:\tools\freepascal', 'C:\FPC\3.2.2', 'C:\FPC')
+          $binCandidates = @(
+            'bin\x86_64-win64',
+            'bin\i386-win32'
           )
           $found = $null
-          foreach ($dir in $candidates) {
-            if (Test-Path (Join-Path $dir 'fpc.exe')) {
-              $found = $dir
-              break
+          $fpcRoot = $null
+          foreach ($root in $roots) {
+            if (-not (Test-Path $root)) { continue }
+            foreach ($rel in $binCandidates) {
+              $dir = Join-Path $root $rel
+              if (Test-Path (Join-Path $dir 'fpc.exe')) {
+                $found = $dir
+                $fpcRoot = $root
+                break
+              }
             }
+            if ($found) { break }
           }
           if (-not $found) {
             $hit = Get-ChildItem -Path 'C:\tools','C:\FPC','C:\lazarus' -Filter fpc.exe -Recurse -ErrorAction SilentlyContinue |
               Select-Object -First 1
-            if ($hit) { $found = $hit.DirectoryName }
+            if ($hit) {
+              $found = $hit.DirectoryName
+              $fpcRoot = Split-Path (Split-Path $found -Parent) -Parent
+            }
           }
-          if (-not $found) {
-            throw 'fpc.exe not found after Chocolatey install'
+          if (-not $found) { throw 'fpc.exe not found after Chocolatey install' }
+
+          # Silent Chocolatey installs often skip a usable fpc.cfg → missing RTL/FCL units.
+          $mkcfg = Join-Path $found 'fpcmkcfg.exe'
+          $cfg = Join-Path $found 'fpc.cfg'
+          if ((Test-Path $mkcfg) -and $fpcRoot) {
+            Write-Host "Generating fpc.cfg with basepath=$fpcRoot"
+            & $mkcfg -d "basepath=$fpcRoot" -o $cfg
           }
+
           Write-Host "Using FPC at $found"
           $found | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          # Also refresh current process PATH for any same-step consumers
           $env:Path = "$found;$env:Path"
           & (Join-Path $found 'fpc.exe') -iV
+          # Sanity: FCL Process unit must resolve
+          $probe = Join-Path $env:RUNNER_TEMP 'fpc_probe.pas'
+          Set-Content -Path $probe -Value "program p; uses Process; begin end."
+          & (Join-Path $found 'fpc.exe') -FE"$env:RUNNER_TEMP" $probe
+          if ($LASTEXITCODE -ne 0) { throw 'FPC cannot compile with unit Process — install incomplete' }
 
       - name: Validate docs
         if: runner.os == 'Linux'
