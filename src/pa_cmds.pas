@@ -642,7 +642,7 @@ begin
             if ErrS <> '' then
               Say(Trim(ErrS));
             Say('Recording (Python original) at ' + OutPath + ' (' +
-              IntToStr(Cases.Count) + ' cases)');
+              CountNoun(Cases.Count, 'case', 'cases') + ')');
             Exit(0);
           finally
             Cases.Free;
@@ -661,14 +661,14 @@ begin
       begin
         Cases.Free;
         Cases := SampleCasesForLang(Lang, Count);
-        Say('Generated ' + IntToStr(Count) +
-          ' case skeletons. Replace ok with returns from the original.');
+        Say('Generated ' + CountNoun(Count, 'case skeleton', 'case skeletons') +
+          '. Replace ok with returns from the original.');
       end;
       Cases.SaveToFile(OutPath);
       Manifest.Strings['recorded_at'] := FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', Now);
       Manifest.Integers['case_count'] := Cases.Count;
       WriteManifest(Crate, Manifest);
-      Say('Recording at ' + OutPath + ' (' + IntToStr(Cases.Count) + ' cases)');
+      Say('Recording at ' + OutPath + ' (' + CountNoun(Cases.Count, 'case', 'cases') + ')');
       Result := 0;
     finally
       Cases.Free;
@@ -810,7 +810,7 @@ begin
         end;
       end;
     end;
-    Say(Format('diff: %d/%d ok, %d mismatch', [Total - Mismatch, Total, Mismatch]));
+    Say(Format('diff: %d/%d ok, %s', [Total - Mismatch, Total, CountNoun(Mismatch, 'mismatch', 'mismatches')]));
     if Mismatch = 0 then
       Result := 0
     else
@@ -901,7 +901,7 @@ begin
   end
   else
   begin
-    Say('GATE FAIL (' + IntToStr(Failures) + ')');
+    Say(Format('GATE FAIL (%s)', [CountNoun(Failures, 'check fails', 'checks fail')]));
     Result := 1;
   end;
 end;
@@ -965,7 +965,7 @@ begin
       Md.Add('');
       Md.Add('- package: `' + JsonStr(Manifest, 'package_name', '') + '`');
       Md.Add('- unit: `' + JsonStr(Manifest, 'unit', '') + '`');
-      Md.Add('- casos: ' + IntToStr(Cases));
+      Md.Add('- cases: ' + IntToStr(Cases));
       Md.Add('- gate: ' + BoolToStr(JsonBool(Manifest, 'gate_passed', False), True));
       Md.Add('- enabled: ' + BoolToStr(JsonBool(Manifest, 'enabled', False), True));
       Md.Add('');

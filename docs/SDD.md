@@ -26,6 +26,7 @@ CLI + agent skills to migrate any codebase to Free Pascal/Lazarus with behaviora
 - v0.3.0: cross-platform paths/executables, `build.ps1`, GitHub Actions on Ubuntu/macOS/Windows
 - v0.3.1: AGENTS/CONTRIBUTING/FAQ/showcase, `validate_project.py` in CI; awesome-REA tracker
 - v0.3.2: stack preference — official Lazarus/FCL/LCL (+ CCR/frameworks); `docs/stack.md`
+- v0.3.3: upstream sync — LF line endings via `.gitattributes`, singular/plural CLI count formatting (diff, gate, record, report), report terminology fix
 
 - OpenBot routine `rust-anything-upstream-sync`: hourly (America/Sao_Paulo :15), thread; tracker `docs/upstream-rust-anything.json`
 - OpenBot routine `awesome-rea-upstream-sync`: hourly (America/Sao_Paulo :45), thread; tracker `docs/upstream-awesome-rea.json`

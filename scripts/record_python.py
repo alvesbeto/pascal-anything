@@ -134,7 +134,8 @@ def main() -> None:
     with out.open("w", encoding="utf-8") as fh:
         for row in cases:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
-    print(f"wrote {len(cases)} cases to {out}", file=sys.stderr)
+    case_noun = "case" if len(cases) == 1 else "cases"
+    print(f"wrote {len(cases)} {case_noun} to {out}", file=sys.stderr)
 
 
 if __name__ == "__main__":

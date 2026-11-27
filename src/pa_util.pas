@@ -47,6 +47,8 @@ function ResolveBinary(const APathOrName: string): string;
 function PathHasSegment(const APath, ASegment: string): Boolean;
 function FindPython: string;
 function HostPlatform: string;
+function Pluralize(Count: Integer; const SingularNoun, PluralNoun: string): string;
+function CountNoun(Count: Integer; const SingularNoun, PluralNoun: string): string;
 
 implementation
 
@@ -484,6 +486,19 @@ begin
   if HasPasSources(ARoot) or FileExists(PathJoin(ARoot, 'pascal-anything.json')) then
     Exit('pascal');
   Result := 'unknown';
+end;
+
+function Pluralize(Count: Integer; const SingularNoun, PluralNoun: string): string;
+begin
+  if Count = 1 then
+    Result := SingularNoun
+  else
+    Result := PluralNoun;
+end;
+
+function CountNoun(Count: Integer; const SingularNoun, PluralNoun: string): string;
+begin
+  Result := IntToStr(Count) + ' ' + Pluralize(Count, SingularNoun, PluralNoun);
 end;
 
 end.
