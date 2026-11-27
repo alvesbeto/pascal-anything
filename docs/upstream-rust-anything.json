@@ -1,8 +1,8 @@
 {
   "upstream": "https://github.com/erkamyaman/rust-anything",
-  "lastSeenSha": "a74fa8ed4330ce485285f39c317df75f970cc4c6",
-  "lastSeenMessage": "README translations: How it works graphic in each language",
-  "lastSeenAt": "2026-11-27T18:41:18Z",
-  "lastCheckedAt": "2026-11-27T19:25:00Z",
-  "notes": "Ported bridge --end-state modeling (replace|bindings|scaffold), reviewer report in REPORT.md with intended differences and kept exports, and known-diffs.jsonl diff/gate tracking."
+  "lastSeenSha": "a1208c35727bb8d701023fe8eec42988c652b343",
+  "lastSeenMessage": "README: total downloads badge (crates.io + npm) served by rustanything.ai",
+  "lastSeenAt": "2026-11-27T21:14:22Z",
+  "lastCheckedAt": "2026-11-27T21:16:50Z",
+  "notes": "Adapted CI concurrency settings to cancel superseded PR runs while keeping main runs serialized; skipped Rust-specific benchmarks, author profile, and website changes."
 }
