@@ -2,8 +2,6 @@ unit pa_mcp;
 
 {$mode objfpc}{$H+}
 
-{ Minimal MCP stdio server (JSON-RPC 2.0, newline-delimited), mirroring rust-anything mcp. }
-
 interface
 
 uses

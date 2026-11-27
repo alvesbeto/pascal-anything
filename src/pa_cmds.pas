@@ -193,38 +193,38 @@ var
 begin
   Ok := True;
   Say(AppName + ' doctor ' + AppVersion);
-  Check('fpc', 'fpc', 'instale Free Pascal (já em ~/.local/bin se usou o tarball)');
-  Check('ppcx64', 'ppcx64', 'vem com o FPC; coloque ~/.local/lib/fpc/3.2.2 no PATH');
+  Check('fpc', 'fpc', 'install Free Pascal (tarball under ~/.local/bin is fine)');
+  Check('ppcx64', 'ppcx64', 'ships with FPC; put ~/.local/lib/fpc/3.2.2 on PATH');
   if Which('lazbuild') <> '' then
     Say('[ok] lazbuild: ' + Which('lazbuild'))
   else if FileExists(ExpandFileName('~/.local/fpclaz/lazarus/lazbuild')) then
     Say('[ok] lazbuild: ~/.local/fpclaz/lazarus/lazbuild (fpclazup)')
   else
-    Say('[warn] lazbuild — fpclazup headless em ~/.local/fpclaz, ou sudo apt install lazarus');
+    Say('[warn] lazbuild — fpclazup under ~/.local/fpclaz, or: sudo apt install lazarus');
   if Which('node') <> '' then
     Say('[ok] node: ' + Which('node'))
   else
-    Say('[warn] node — útil para gravar apps TypeScript/JavaScript');
+    Say('[warn] node — useful when recording TypeScript/JavaScript apps');
   if Which('python3') <> '' then
     Say('[ok] python3: ' + Which('python3'))
   else
-    Say('[warn] python3 — útil para gravar apps Python');
+    Say('[warn] python3 — useful when recording Python apps');
   if Ok then
   begin
-    Say('Ambiente mínimo para o CLI ok.');
+    Say('Minimum CLI environment looks good.');
     Result := 0;
   end
   else
   begin
-    Say('Falta ferramenta obrigatória. Corrija e rode de novo.');
+    Say('Required tool missing. Fix it and run doctor again.');
     Result := 1;
   end;
 end;
 
 function CmdSetup(const ARoot: string): Integer;
 var
-  Home, AgentsDir, SkillDir, CursorDir, ClaudeDir: string;
-  SkillSrc, SkillDst: string;
+  Home, AgentsDir, SkillDir, ClaudeDir: string;
+  SkillSrc: string;
   SelfBin, McpJson: string;
 begin
   Home := GetEnvironmentVariable('HOME');
@@ -246,12 +246,10 @@ begin
     if FileExists(PathJoin(SkillSrc, 'whole-app.md')) then
       WriteTextFile(PathJoin(SkillDir, 'whole-app.md'),
         ReadTextFile(PathJoin(SkillSrc, 'whole-app.md')));
-    Say('Skill instalada em ' + SkillDir);
+    Say('Skill installed at ' + SkillDir);
   end
   else
-    SayErr('skills/' + AppName + ' não encontrada em ' + ARoot);
-
-  CursorDir := PathJoin3(Home, '.cursor', 'mcp.json');
+    SayErr('skills/' + AppName + ' not found under ' + ARoot);
   ClaudeDir := PathJoin(Home, '.claude');
   EnsureDir(ClaudeDir);
   McpJson :=
@@ -264,9 +262,9 @@ begin
     '  }' + LineEnding +
     '}' + LineEnding;
   WriteTextFile(PathJoin(ClaudeDir, 'pascal-anything.mcp.json'), McpJson);
-  Say('Snippet MCP gravado em ' + PathJoin(ClaudeDir, 'pascal-anything.mcp.json'));
-  Say('Mescle no MCP do Cursor/Claude se ainda não estiver. Binário: ' + SelfBin);
-  Say('Reinicie o agente após o setup.');
+  Say('MCP snippet written to ' + PathJoin(ClaudeDir, 'pascal-anything.mcp.json'));
+  Say('Merge into Cursor/Claude MCP config if needed. Binary: ' + SelfBin);
+  Say('Restart the agent after setup.');
   Result := 0;
 end;
 
@@ -319,22 +317,22 @@ begin
       begin
         Md := TStringList.Create;
         try
-          Md.Add('# Plano de migração → Free Pascal / Lazarus');
+          Md.Add('# Migration plan → Free Pascal / Lazarus');
           Md.Add('');
-          Md.Add('- raiz: `' + Root + '`');
-          Md.Add('- linguagem detectada: **' + Lang + '**');
-          Md.Add('- alvo: **Pascal/Lazarus** (pacote FPC + stubs em `port.pas`)');
+          Md.Add('- root: `' + Root + '`');
+          Md.Add('- detected language: **' + Lang + '**');
+          Md.Add('- target: **Pascal/Lazarus** (FPC package + `port.pas` stubs)');
           if WholeApp then
-            Md.Add('- modo: app inteiro (unidade a unidade, depois lift)');
+            Md.Add('- mode: whole app (unit by unit, then lift)');
           Md.Add('');
-          Md.Add('## Unidades (ordem sugerida)');
+          Md.Add('## Units (suggested order)');
           Md.Add('');
           for I := 0 to Files.Count - 1 do
             Md.Add(Format('%d. `%s`', [I + 1, RelPath(Root, Files[I])]));
           if Files.Count = 0 then
-            Md.Add('_Nenhum fonte encontrado para a linguagem._');
+            Md.Add('_No source files found for this language._');
           Md.Add('');
-          Md.Add('Próximo passo: `pascal-anything bridge <raiz> <unidade>`');
+          Md.Add('Next: `pascal-anything bridge <root> <unit>`');
           OutText := Md.Text;
         finally
           Md.Free;
@@ -344,7 +342,7 @@ begin
       if OutFile <> '' then
       begin
         WriteTextFile(OutFile, OutText);
-        Say('Plano escrito em ' + OutFile);
+        Say('Plan written to ' + OutFile);
       end
       else
         Say(OutText);
@@ -360,21 +358,15 @@ end;
 function BridgeStubPort(const UnitName, SrcLang: string): string;
 begin
   Result :=
-    '{ Port stubs — reescreva o comportamento da unidade original aqui.' + LineEnding +
-    '  Fonte: ' + UnitName + ' (' + SrcLang + ')' + LineEnding +
-    '  Critério de pronto: `pascal-anything gate` passa.' + LineEnding +
-    '}' + LineEnding +
     'unit port;' + LineEnding +
+    LineEnding +
+    '{ From: ' + UnitName + ' (' + SrcLang + ') }' + LineEnding +
     LineEnding +
     '{$mode objfpc}{$H+}' + LineEnding +
     LineEnding +
     'interface' + LineEnding +
     LineEnding +
-    '{ TODO: declare as funções exportadas espelhando a API original }' + LineEnding +
-    LineEnding +
     'implementation' + LineEnding +
-    LineEnding +
-    '{ TODO: implemente; não grave resultados de cases.jsonl no código }' + LineEnding +
     LineEnding +
     'end.' + LineEnding;
 end;
@@ -388,9 +380,6 @@ begin
     LineEnding +
     'uses' + LineEnding +
     '  SysUtils, Classes, fpjson, jsonparser, port;' + LineEnding +
-    LineEnding +
-    '{ Lê cases.jsonl e chama as funções de port; imprime JSONL de resultados.' + LineEnding +
-    '  O agente completa o despacho por nome de função. }' + LineEnding +
     LineEnding +
     'var' + LineEnding +
     '  SL: TStringList;' + LineEnding +
@@ -409,7 +398,6 @@ begin
     '    begin' + LineEnding +
     '      Line := Trim(SL[I]);' + LineEnding +
     '      if Line = '''' then Continue;' + LineEnding +
-    '      { TODO: parse Line, call port, print {"fn":...,"ok":...} or {"fn":...,"err":...} }' + LineEnding +
     '      WriteLn(Line);' + LineEnding +
     '    end;' + LineEnding +
     '  finally' + LineEnding +
@@ -433,7 +421,7 @@ begin
     UnitPath := RelPath(Root, UnitPath);
   if (not Force) and (not FileExists(PathJoin(Root, UnitPath))) then
   begin
-    SayErr('unidade não encontrada: ' + UnitPath);
+    SayErr('unit not found: ' + UnitPath);
     Exit(1);
   end;
 
@@ -451,7 +439,7 @@ begin
   if DirectoryExists(Dest) and (not Force) and
      FileExists(PathJoin(Dest, ManifestFileName)) then
   begin
-    SayErr('já existe bridge em ' + Dest + ' (use --force)');
+    SayErr('bridge already exists at ' + Dest + ' (use --force)');
     Exit(1);
   end;
 
@@ -487,7 +475,7 @@ begin
     Exp := TJSONObject.Create;
     Exp.Add('name', 'TODO');
     Exp.Add('file', UnitPath);
-    Exp.Add('note', 'preencha após analisar a unidade');
+    Exp.Add('note', 'fill after inspecting the unit');
     ExportList.Add(Exp);
     Manifest.Add('exports', ExportList);
     WriteManifest(Dest, Manifest);
@@ -496,19 +484,19 @@ begin
   end;
 
   Task :=
-    '# TASK — portar `' + UnitPath + '` → Free Pascal' + LineEnding +
+    '# TASK — port `' + UnitPath + '` → Free Pascal' + LineEnding +
     LineEnding +
-    '1. Leia a unidade original e preencha `src/port.pas` com a mesma API.' + LineEnding +
+    '1. Read the original unit and fill `src/port.pas` with the same API.' + LineEnding +
     '2. `pascal-anything record ' + Dest + '`' + LineEnding +
-    '3. Complete `harness.lpr` para despachar cada `fn` de `cases.jsonl`.' + LineEnding +
+    '3. Wire `harness.lpr` to dispatch each `fn` from `cases.jsonl`.' + LineEnding +
     '4. `pascal-anything build ' + Dest + '` && `pascal-anything diff ' + Dest + '`' + LineEnding +
-    '5. Só chame pronto quando `pascal-anything gate ' + Dest + '` passar.' + LineEnding +
+    '5. Call it done only when `pascal-anything gate ' + Dest + '` passes.' + LineEnding +
     LineEnding +
-    'Não copie resultados gravados para dentro do código. Não enfraqueça testes.' + LineEnding;
+    'Do not paste recorded results into source. Do not weaken tests.' + LineEnding;
   WriteTextFile(PathJoin(Dest, TaskFileName), Task);
 
-  Say('Bridge criado em ' + Dest);
-  Say('Edite src/port.pas conforme TASK.md, depois: pascal-anything record ' + Dest);
+  Say('Bridge created at ' + Dest);
+  Say('Edit src/port.pas per TASK.md, then: pascal-anything record ' + Dest);
   Result := 0;
 end;
 
@@ -537,7 +525,7 @@ begin
       Obj.Add('args', Args);
       Args := nil;
       Obj.Add('ok', TJSONNull.Create);
-      Obj.Add('note', 'substitua rodando o original; agent completa o gravador');
+      Obj.Add('note', 'replace by running the original; agent completes the recorder');
       Result.Add(Obj.AsJSON);
     finally
       Obj.Free;
@@ -577,7 +565,7 @@ begin
   Crate := AbsolutePath(ACrate);
   if not LoadManifest(Crate, Manifest) then
   begin
-    SayErr('sem ' + ManifestFileName + ' em ' + Crate + ' — rode bridge antes');
+    SayErr('missing ' + ManifestFileName + ' in ' + Crate + ' — run bridge first');
     Exit(1);
   end;
   try
@@ -626,15 +614,15 @@ begin
             WriteManifest(Crate, Manifest);
             if ErrS <> '' then
               Say(Trim(ErrS));
-            Say('Gravação (original Python) em ' + OutPath + ' (' +
-              IntToStr(Cases.Count) + ' casos)');
+            Say('Recording (Python original) at ' + OutPath + ' (' +
+              IntToStr(Cases.Count) + ' cases)');
             Exit(0);
           finally
             Cases.Free;
           end;
         end
         else
-          SayErr('recorder Python falhou: ' + ErrS + OutS);
+          SayErr('Python recorder failed: ' + ErrS + OutS);
       end;
     end;
 
@@ -646,14 +634,14 @@ begin
       begin
         Cases.Free;
         Cases := SampleCasesForLang(Lang, Count);
-        Say('Gerados ' + IntToStr(Count) +
-          ' esqueletos de caso. Substitua `ok` pelos retornos do original.');
+        Say('Generated ' + IntToStr(Count) +
+          ' case skeletons. Replace ok with returns from the original.');
       end;
       Cases.SaveToFile(OutPath);
       Manifest.Strings['recorded_at'] := FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', Now);
       Manifest.Integers['case_count'] := Cases.Count;
       WriteManifest(Crate, Manifest);
-      Say('Gravação em ' + OutPath + ' (' + IntToStr(Cases.Count) + ' casos)');
+      Say('Recording at ' + OutPath + ' (' + IntToStr(Cases.Count) + ' cases)');
       Result := 0;
     finally
       Cases.Free;
@@ -673,12 +661,12 @@ begin
   Harness := PathJoin(Crate, 'harness.lpr');
   if not FileExists(Harness) then
   begin
-    SayErr('harness.lpr ausente em ' + Crate);
+    SayErr('harness.lpr missing in ' + Crate);
     Exit(1);
   end;
   if Which('fpc') = '' then
   begin
-    SayErr('fpc não encontrado — rode pascal-anything doctor');
+    SayErr('fpc not found — run pascal-anything doctor');
     Exit(1);
   end;
   EnsureDir(PathJoin(Crate, 'bin'));
@@ -691,7 +679,7 @@ begin
   begin
     Say(OutS);
     SayErr(ErrS);
-    SayErr('build falhou (exit ' + IntToStr(Code) + ')');
+    SayErr('build failed (exit ' + IntToStr(Code) + ')');
     Exit(1);
   end;
   Say(OutS);
@@ -724,7 +712,7 @@ begin
   CasesPath := PathJoin(Crate, CasesFileName);
   if not FileExists(CasesPath) then
   begin
-    SayErr('rode record antes');
+    SayErr('run record first');
     Exit(1);
   end;
   BinHarness := PathJoin3(Crate, 'bin', 'harness');
@@ -732,7 +720,7 @@ begin
     BinHarness := PathJoin(Crate, 'harness');
   if not FileExists(BinHarness) then
   begin
-    SayErr('binário harness ausente — rode build');
+    SayErr('harness binary missing — run build');
     Exit(1);
   end;
 
@@ -842,14 +830,14 @@ begin
 
   PortPath := PathJoin3(Crate, 'src', 'port.pas');
   GateCheck('port.pas', FileExists(PortPath), PortPath,
-    'preencha src/port.pas', Failures);
+    'fill in src/port.pas', Failures);
 
   if FileExists(PortPath) then
   begin
     PortSrc := ReadTextFile(PortPath);
     HasTodo := (Pos('TODO', PortSrc) > 0);
-    GateCheck('ported', not HasTodo, 'sem marcadores TODO em port.pas',
-      'implemente as funções ainda stubadas', Failures);
+    GateCheck('ported', not HasTodo, 'marcadores TODO em port.pas',
+      'implement remaining stubbed functions', Failures);
   end;
 
   CasesPath := PathJoin(Crate, CasesFileName);
@@ -858,15 +846,15 @@ begin
 
   GateCheck('build',
     FileExists(PathJoin3(Crate, 'bin', 'harness')) or FileExists(PathJoin(Crate, 'harness')),
-    'binário harness', 'pascal-anything build ' + Crate, Failures);
+    'harness binary', 'pascal-anything build ' + Crate, Failures);
 
   if FileExists(CasesPath) and
      (FileExists(PathJoin3(Crate, 'bin', 'harness')) or FileExists(PathJoin(Crate, 'harness'))) then
   begin
     if CmdDiff(Crate) = 0 then
-      GateCheck('behavior', True, 'todos os casos batem', '', Failures)
+      GateCheck('behavior', True, 'all cases match', '', Failures)
     else
-      GateCheck('behavior', False, 'há mismatches',
+      GateCheck('behavior', False, 'mismatches remain',
         'pascal-anything diff ' + Crate, Failures);
   end;
 
@@ -904,11 +892,11 @@ begin
   try
     if Files.Count = 0 then
     begin
-      SayErr('nenhuma unidade candidata em ' + Root);
+      SayErr('no candidate unit in ' + Root);
       Exit(1);
     end;
     UnitId := RelPath(Root, Files[0]);
-    Say('go: perfil simples → unidade quente candidata: ' + UnitId);
+    Say('go: simple profile → candidate hot unit: ' + UnitId);
     if Workload.Count > 0 then
       Say('workload: ' + Workload.CommaText);
     Result := CmdBridge(Root, UnitId, '', '', False);
@@ -919,7 +907,7 @@ begin
     Result := CmdRecord(Dest, 50, '');
     if Result <> 0 then
       Exit;
-    Say('Portar ' + PathJoin(Dest, 'src/port.pas') + ' conforme TASK.md, depois:');
+    Say('Port ' + PathJoin(Dest, 'src/port.pas') + ' per TASK.md, then:');
     Say('  pascal-anything build ' + Dest);
     Say('  pascal-anything gate ' + Dest);
   finally
@@ -937,7 +925,7 @@ begin
   Crate := AbsolutePath(ACrate);
   if not LoadManifest(Crate, Manifest) then
   begin
-    SayErr('manifest ausente');
+    SayErr('manifest missing');
     Exit(1);
   end;
   try
@@ -946,17 +934,17 @@ begin
     EnsureDir(ReportDir);
     Md := TStringList.Create;
     try
-      Md.Add('# Relatório pascal-anything');
+      Md.Add('# pascal-anything report');
       Md.Add('');
-      Md.Add('- pacote: `' + JsonStr(Manifest, 'package_name', '') + '`');
-      Md.Add('- unidade: `' + JsonStr(Manifest, 'unit', '') + '`');
+      Md.Add('- package: `' + JsonStr(Manifest, 'package_name', '') + '`');
+      Md.Add('- unit: `' + JsonStr(Manifest, 'unit', '') + '`');
       Md.Add('- casos: ' + IntToStr(Cases));
       Md.Add('- gate: ' + BoolToStr(JsonBool(Manifest, 'gate_passed', False), True));
       Md.Add('- enabled: ' + BoolToStr(JsonBool(Manifest, 'enabled', False), True));
       Md.Add('');
-      Md.Add('Gerado por ' + AppName + ' ' + AppVersion);
+      Md.Add('Generated by ' + AppName + ' ' + AppVersion);
       WriteTextFile(PathJoin(ReportDir, 'REPORT.md'), Md.Text);
-      Say('Relatório em ' + PathJoin(ReportDir, 'REPORT.md'));
+      Say('Report at ' + PathJoin(ReportDir, 'REPORT.md'));
       Result := 0;
     finally
       Md.Free;
@@ -974,13 +962,13 @@ begin
   Crate := AbsolutePath(ACrate);
   if not LoadManifest(Crate, Manifest) then
   begin
-    SayErr('manifest ausente');
+    SayErr('manifest missing');
     Exit(1);
   end;
   try
     if Enable and (not JsonBool(Manifest, 'gate_passed', False)) then
     begin
-      SayErr('gate ainda não passou — enable recusado');
+      SayErr('gate has not passed — enable refused');
       Exit(1);
     end;
     Manifest.Booleans['enabled'] := Enable;
@@ -997,13 +985,13 @@ end;
 
 function CmdRules: Integer;
 begin
-  Say('Regras pascal-anything (espelho do fluxo rust-anything, alvo Pascal/Lazarus):');
-  Say('1. O original é a verdade — grave com record, prove com diff/gate.');
-  Say('2. Uma unidade por vez; gate passa antes da próxima.');
-  Say('3. Não cole resultados de cases.jsonl no código.');
-  Say('4. Não enfraqueça testes nem edite cases para forçar pass.');
-  Say('5. Alvo: Free Pascal + Lazarus (pacotes .lpk/.pas, LCL quando for GUI).');
-  Say('6. API dos callers permanece estável até o enable.');
+  Say('pascal-anything rules (rust-anything loop, Pascal/Lazarus target):');
+  Say('1. The original is ground truth — record it, prove with diff/gate.');
+  Say('2. One unit at a time; gate must pass before the next.');
+  Say('3. Do not paste cases.jsonl results into source.');
+  Say('4. Do not weaken tests or edit cases to force a pass.');
+  Say('5. Target: Free Pascal + Lazarus (.lpk/.pas packages; LCL for GUI).');
+  Say('6. Callers keep a stable API until enable.');
   Result := 0;
 end;
 
@@ -1015,13 +1003,13 @@ end;
 
 function CmdHelp: Integer;
 begin
-  Say('Pascal Anything — reescreva qualquer app em Free Pascal/Lazarus, unidade a unidade.');
+  Say('Pascal Anything — rewrite any app in Free Pascal/Lazarus, one unit at a time.');
   Say('');
-  Say('Uso: pascal-anything <comando> [opções]');
+  Say('Usage: pascal-anything <command> [options]');
   Say('');
-  Say('Comandos:');
-  Say('  doctor                         verifica fpc/lazbuild/runtimes');
-  Say('  setup [repo]                   instala skill + snippet MCP nos agentes');
+  Say('Commands:');
+  Say('  doctor                         check fpc/lazbuild/runtimes');
+  Say('  setup [repo]                   install skill + MCP snippet for agents');
   Say('  analyze [root] [--json] [--whole-app] [--lang L] [-o file]');
   Say('  bridge <root> <unit> [--out DIR] [--name NAME] [--force]');
   Say('  record [crate] [--count N] [--inputs file.jsonl]');

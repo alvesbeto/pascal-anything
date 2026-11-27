@@ -2,11 +2,11 @@
 
 ```
 analyze → bridge → record → port.pas → build → diff → gate
-  o quê     pacote    o que o     você /       harness   casos     feito
-  portar    FPC       original    agente       vs        batem?
-                      faz         escreve      Pascal
+  what to   FPC      what the   you /       harness   cases
+  port      package  original   agent       vs        match?
+                     does       writes      Pascal
 ```
 
-O original é a fonte da verdade. `record` salva retornos; `diff` / `gate` exigem o mesmo no port Pascal.
+The original is ground truth. `record` stores returns; `diff` / `gate` require the same from the Pascal port.
 
-Alvo: **Free Pascal** (console/biblioteca) e **Lazarus** (GUI LCL). Bridge padrão: pasta `pascal/<unit>_pas/` com `pascal-anything.json`, `src/port.pas`, `harness.lpr`.
+Target: **Free Pascal** (console/library) and **Lazarus** (LCL GUI). Default bridge: `pascal/<unit>_pas/` with `pascal-anything.json`, `src/port.pas`, `harness.lpr`.

@@ -1,23 +1,23 @@
 {
-  "schema" : "pascal-anything/bridge@1",
-  "root" : "/home/beto/Documentos/dev/Repositorios/pascal-anything/demo/slug-py",
-  "unit" : "slug.py",
-  "kind" : "fpc-package",
-  "package_name" : "slug_pas",
-  "lang" : "python",
-  "target" : "pascal-lazarus",
-  "enabled" : false,
-  "exports" : [
+  "schema": "pascal-anything/bridge@1",
+  "root": "/home/beto/Documentos/dev/Repositorios/pascal-anything/demo/slug-py",
+  "unit": "slug.py",
+  "kind": "fpc-package",
+  "package_name": "slug_pas",
+  "lang": "python",
+  "target": "pascal-lazarus",
+  "enabled": false,
+  "exports": [
     {
-      "name" : "TODO",
-      "file" : "slug.py",
-      "note" : "preencha ap?s analisar a unidade"
+      "name": "TODO",
+      "file": "slug.py",
+      "note": "fill after inspecting the unit"
     }
   ],
-  "recorded_at" : "2026-11-27T08:42:13",
-  "case_count" : 4,
-  "built_at" : "2026-11-27T08:42:13",
-  "gate_passed" : true,
-  "gate_at" : "2026-11-27T08:42:13",
-  "recorder" : "python"
+  "recorded_at": "2026-11-27T08:42:13",
+  "case_count": 4,
+  "built_at": "2026-11-27T08:42:13",
+  "gate_passed": true,
+  "gate_at": "2026-11-27T08:42:13",
+  "recorder": "python"
 }

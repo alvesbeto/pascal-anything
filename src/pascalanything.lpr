@@ -121,7 +121,7 @@ begin
         UnitId := NextPositional(Idx);
         if (Root = '') or (UnitId = '') then
         begin
-          SayErr('uso: pascal-anything bridge <root> <unit>');
+          SayErr('usage: pascal-anything bridge <root> <unit>');
           Code := 2;
         end
         else
@@ -197,7 +197,7 @@ begin
     'mcp':
       Code := CmdMcp;
   else
-    SayErr('comando desconhecido: ' + Cmd);
+    SayErr('unknown command: ' + Cmd);
     Code := CmdHelp;
     if Code = 0 then
       Code := 2;

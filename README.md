@@ -1,19 +1,21 @@
 # Pascal Anything
 
+[Português (Brasil)](README.pt-BR.md)
+
 Rewrite your app in **Free Pascal / Lazarus**, and prove it still behaves the same.
 
-Réplica conceitual de [rust-anything](https://github.com/erkamyaman/rust-anything): mesmas ideias (analyze → bridge → record → port → diff → gate), alvo e implementação em Pascal em vez de Rust.
+Conceptual counterpart of [rust-anything](https://github.com/erkamyaman/rust-anything): same loop (`analyze` → `bridge` → `record` → `port` → `diff` → `gate`), targeting Pascal instead of Rust.
 
 ## Quick start
 
-Para o agente:
+For a coding agent:
 
 ```text
-Instale Pascal Anything (build com fpc em src/), rode pascal-anything setup.
-Rode pascal-anything go -- <comando lento do app> e termine o port até pascal-anything gate passar.
+Install Pascal Anything (build with fpc under src/), run pascal-anything setup.
+Run pascal-anything go -- <slow command of this app> and finish the port until pascal-anything gate passes.
 ```
 
-Na máquina:
+On the machine:
 
 ```sh
 export PATH="$HOME/.local/bin:$HOME/.local/lib/fpc/3.2.2:$PATH"
@@ -29,37 +31,38 @@ pascal-anything setup
 analyze → bridge → record → port.pas → build → diff → gate → enable
 ```
 
-| Comando | Função |
+| Command | Role |
 | --- | --- |
-| `analyze` | Mapa do repo e ordem de migração → Pascal/Lazarus |
-| `bridge` | Pacote FPC com `src/port.pas` e `harness.lpr` |
-| `record` | Grava `cases.jsonl` a partir do original |
-| `build` / `diff` | Compila o harness e compara casos |
-| `gate` | Critério de pronto da unidade |
-| `go` | Atalho para a unidade candidata mais óbvia |
-| `setup` / `doctor` | Skill nos agentes e checagem de ferramentas |
+| `analyze` | Map the repo and migration order → Pascal/Lazarus |
+| `bridge` | FPC package with `src/port.pas` and `harness.lpr` |
+| `record` | Write `cases.jsonl` from the original (Python runs the real module) |
+| `build` / `diff` | Compile the harness and compare cases |
+| `gate` | Definition of done for one unit |
+| `go` | Shortcut for the obvious candidate unit |
+| `setup` / `doctor` | Agent skill + toolchain checks |
+| `mcp` | MCP stdio tools for the same steps |
 
-## Requisitos
+Agents: read [`llms.txt`](llms.txt).
 
-- **Free Pascal 3.2+** (CLI) — instalável em `~/.local` sem root
-- **Lazarus / lazbuild** (opcional) — `fpclazup` headless em `~/.local/fpclaz` (ver `docs/research.md`), ou `sudo apt install lazarus`
-- Runtimes do app original (node, python3, …) para gravar comportamento
+## Requirements
 
-Agentes: leia [`llms.txt`](llms.txt). MCP: `pascal-anything mcp`.
+- **Free Pascal 3.2+** — installable under `~/.local` without root
+- **Lazarus / lazbuild** (optional for GUI) — `sudo apt install lazarus`, or headless `fpclazup` (see [`docs/research.md`](docs/research.md))
+- Original-app runtimes (`node`, `python3`, …) when recording behavior
 
 ## Demo
 
 ```sh
 pascal-anything analyze demo/slug-py
 pascal-anything bridge demo/slug-py slug.py
-# implemente pascal/slug_pas/src/port.pas, complete o harness, depois:
-pascal-anything record demo/slug-py/pascal/slug_pas
-pascal-anything build  demo/slug-py/pascal/slug_pas
-pascal-anything gate   demo/slug-py/pascal/slug_pas
+pascal-anything record demo/slug-py/pascal/slug_pas --inputs demo/slug-py/inputs.jsonl
+# implement src/port.pas and harness dispatch, then:
+pascal-anything build demo/slug-py/pascal/slug_pas
+pascal-anything gate  demo/slug-py/pascal/slug_pas
 ```
 
 ## License
 
-MIT OR Apache-2.0, mesma dual license do projeto original. Ports e código gerado no *seu* repositório são seus.
+MIT OR Apache-2.0, same dual license as the upstream idea. Ports and generated code in *your* repository are yours.
 
-Inspirado em rust-anything © Erkam Yaman. Esta réplica não é afiliada oficialmente.
+Inspired by rust-anything © Erkam Yaman. This project is not officially affiliated.

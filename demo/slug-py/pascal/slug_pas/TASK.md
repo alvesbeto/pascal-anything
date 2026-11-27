@@ -1,9 +1,9 @@
-# TASK — portar `slug.py` → Free Pascal
+# TASK — port `slug.py` → Free Pascal
 
-1. Leia a unidade original e preencha `src/port.pas` com a mesma API.
-2. `pascal-anything record /home/beto/Documentos/dev/Repositorios/pascal-anything/demo/slug-py/pascal/slug_pas`
-3. Complete `harness.lpr` para despachar cada `fn` de `cases.jsonl`.
-4. `pascal-anything build /home/beto/Documentos/dev/Repositorios/pascal-anything/demo/slug-py/pascal/slug_pas` && `pascal-anything diff /home/beto/Documentos/dev/Repositorios/pascal-anything/demo/slug-py/pascal/slug_pas`
-5. Só chame pronto quando `pascal-anything gate /home/beto/Documentos/dev/Repositorios/pascal-anything/demo/slug-py/pascal/slug_pas` passar.
+1. Read the original unit and fill `src/port.pas` with the same API.
+2. `pascal-anything record` this crate (with `--inputs` when useful).
+3. Wire `harness.lpr` to dispatch each `fn` from `cases.jsonl`.
+4. `pascal-anything build` then `pascal-anything diff`.
+5. Call it done only when `pascal-anything gate` passes.
 
-Não copie resultados gravados para dentro do código. Não enfraqueça testes.
+Do not paste recorded results into source. Do not weaken tests.
