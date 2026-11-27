@@ -1,0 +1,8 @@
+{
+  "upstream": "https://github.com/erkamyaman/rust-anything",
+  "lastSeenSha": "6617916717e9ce0fc2863cc49a90c5a1ebb7da1b",
+  "lastSeenMessage": "fix(analyze): flag Number.parseInt and Number.parseFloat as Number semantics (#730)",
+  "lastSeenAt": "2026-11-27T09:50:50Z",
+  "lastCheckedAt": "2026-11-27T12:12:38Z",
+  "notes": "Updated by the hourly OpenBot routine rust-anything-upstream-sync"
+}
