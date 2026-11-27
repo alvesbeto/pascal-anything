@@ -29,4 +29,11 @@ analyze --whole-app → record app behavior → front door (Pascal owns entry) �
 - Forms/frames only for UI; business rules stay testable via `harness`.
 - Use `lazbuild` when available; otherwise `fpc` for console packages.
 - Prefer **official LCL controls and FCL/RTL units**, then Lazarus CCR / maintained packages, then relevant domain frameworks. Do not invent a parallel UI stack. See [docs/stack.md](../../docs/stack.md).
+- **Canonical LCL GUI architecture**:
+  1. Bind `TMainMenu` to `TForm.Menu` in `.lfm` / form declaration for native OS menu bar integration.
+  2. Preserve complete menu hierarchies: never flatten menus; keep all nested cascaded submenus, child `TMenuItem`s, and separators (`Caption = '-'`).
+  3. Centralize actions in `TActionList` (`TAction`) and bind via `Action := act...` to sync captions, shortcuts, and states across menus, popups, and toolbars.
+  4. Use native `TStatusBar` with dedicated `TStatusPanels` for window footers.
+  5. Assign native `TPopupMenu` directly to the `PopupMenu` property of controls.
+  6. Favor canonical controls (`TSynEdit`, `TSplitter`, `TPageControl`, `TCheckListBox`, `FPCUnit`).
 

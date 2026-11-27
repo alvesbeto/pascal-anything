@@ -18,6 +18,14 @@ Inspiration for verification culture and bilingual docs also comes from the cura
 
 Prefer **official Lazarus / Free Pascal components and relevant FPC/Lazarus frameworks** over custom UI or foreign toolkits. Order: RTL/FCL → official LCL → Lazarus CCR / maintained packages → domain frameworks → thin FFI. Details: [`docs/stack.md`](docs/stack.md).
 
+For GUI ports, follow canonical LCL guidelines:
+- Bind `TMainMenu` via `TForm.Menu := MainMenu` for OS-native menu bars.
+- Strictly preserve cascaded submenu hierarchies and child `TMenuItem` structures (never flatten menus; keep separators with `Caption = '-'`).
+- Centralize actions in `TActionList` (`Action := act...`) across menus, toolbars, popups, and shortcuts.
+- Use `TStatusBar` with dedicated `TStatusPanels`.
+- Attach native `TPopupMenu` directly to controls (`TTreeView`, `TPageControl`, `TStringGrid`, etc.).
+- Adopt canonical components (`TSynEdit`, `TSplitter`, `TPageControl`, `TCheckListBox`, `FPCUnit`).
+
 
 ## Language
 
@@ -60,4 +68,6 @@ If you touched record/diff/gate, re-run the slug demo gate when feasible.
 - update only one of README.md / README.pt-BR.md for shared sections
 - invent affiliation with rust-anything, REA, or awesome-REA beyond "inspired by" / citation
 - replace LCL/FCL with ad-hoc or non-Lazarus GUI stacks unless the user explicitly asks
+- flatten menu trees or omit cascaded submenus/separators when migrating GUI applications
+- write manual event glue between toolbars and menus instead of binding `TActionList` actions
 

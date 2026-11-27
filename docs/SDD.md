@@ -16,6 +16,7 @@ CLI + agent skills to migrate any codebase to Free Pascal/Lazarus with behaviora
 | D6 | First-class Windows / Linux / macOS | Same CLI surface; OS-specific build scripts + CI matrix |
 | D7 | Evidence-first docs (awesome-REA patterns) | Gate claims need evidence; EN/PT README parity validated in CI |
 | D8 | Official Lazarus/FPC stack first | Ports use RTL/FCL, LCL, then CCR/maintained frameworks — not ad-hoc UI toolkits ([docs/stack.md](stack.md)) |
+| D9 | Canonical LCL GUI patterns (Issue #1) | Require native `TMainMenu` (`TForm.Menu`), strict preservation of cascaded submenus, `TActionList` integration, native `TStatusBar` with panels, and `TPopupMenu` over ad-hoc glue code |
 
 
 ## Status
@@ -27,6 +28,7 @@ CLI + agent skills to migrate any codebase to Free Pascal/Lazarus with behaviora
 - v0.3.1: AGENTS/CONTRIBUTING/FAQ/showcase, `validate_project.py` in CI; awesome-REA tracker
 - v0.3.2: stack preference — official Lazarus/FCL/LCL (+ CCR/frameworks); `docs/stack.md`
 - v0.3.3: upstream sync — LF line endings via `.gitattributes`, singular/plural CLI count formatting (diff, gate, record, report), report terminology fix
+- v0.3.4: canonical LCL GUI patterns — TMainMenu form binding, nested cascaded submenu hierarchy preservation, TActionList wiring, TStatusBar panels, TPopupMenu control binding (Issue #1)
 
 - OpenBot routine `rust-anything-upstream-sync`: hourly (America/Sao_Paulo :15), thread; tracker `docs/upstream-rust-anything.json`
 - OpenBot routine `awesome-rea-upstream-sync`: hourly (America/Sao_Paulo :45), thread; tracker `docs/upstream-awesome-rea.json`

@@ -48,6 +48,7 @@ pascal-anything gate pascal/<unit>_pas
 - Prefer Free Pascal style: `{$mode objfpc}{$H+}`, clear units, no unnecessary LCL for CLI ports.
 - **Always prefer official Lazarus/FPC components** (RTL/FCL, LCL) and relevant maintained Lazarus packages/frameworks (CCR, domain libs) over custom widgets or foreign GUI toolkits. See [docs/stack.md](../../docs/stack.md).
 - GUI ports use Lazarus LCL; keep business logic in non-visual units.
+- **Canonical LCL GUI patterns**: bind `TForm.Menu := MainMenu` for native OS menu bars; preserve full cascaded submenu hierarchies and child `TMenuItem`s with separators (never flatten); wire commands through `TActionList` (`Action := act...`); use `TStatusBar` with `TStatusPanels`; attach native `TPopupMenu` directly to controls; use canonical components (`TSynEdit`, `TSplitter`, etc.). See [docs/stack.md](../../docs/stack.md).
 
 
 ## Install

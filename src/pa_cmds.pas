@@ -508,10 +508,13 @@ begin
     '1. Read the original unit and fill `src/port.pas` with the same API.' + LineEnding +
     '2. Prefer official FPC RTL/FCL and Lazarus LCL; then Lazarus CCR / maintained ' +
       'domain frameworks. No ad-hoc or foreign GUI stacks unless the user asks.' + LineEnding +
-    '3. `pascal-anything record ' + Dest + '`' + LineEnding +
-    '4. Wire `harness.lpr` to dispatch each `fn` from `cases.jsonl`.' + LineEnding +
-    '5. `pascal-anything build ' + Dest + '` && `pascal-anything diff ' + Dest + '`' + LineEnding +
-    '6. Call it done only when `pascal-anything gate ' + Dest + '` passes.' + LineEnding +
+    '3. For GUI units: apply canonical LCL guidelines (bind `TForm.Menu := MainMenu`, ' +
+      'preserve full nested cascaded submenus and separators without flattening, wire `TActionList` ' +
+      '(`Action := act...`), use `TStatusBar` with `TStatusPanels`, attach native `TPopupMenu`).' + LineEnding +
+    '4. `pascal-anything record ' + Dest + '`' + LineEnding +
+    '5. Wire `harness.lpr` to dispatch each `fn` from `cases.jsonl`.' + LineEnding +
+    '6. `pascal-anything build ' + Dest + '` && `pascal-anything diff ' + Dest + '`' + LineEnding +
+    '7. Call it done only when `pascal-anything gate ' + Dest + '` passes.' + LineEnding +
     LineEnding +
     'Do not paste recorded results into source. Do not weaken tests.' + LineEnding;
 
@@ -1018,8 +1021,8 @@ begin
   Say('3. Do not paste cases.jsonl results into source.');
   Say('4. Do not weaken tests or edit cases to force a pass.');
   Say('5. Target: Free Pascal + Lazarus (.lpk/.pas; official LCL/FCL first, then CCR/frameworks).');
-
-  Say('6. Callers keep a stable API until enable.');
+  Say('6. GUI ports: canonical LCL (bind TForm.Menu, preserve cascaded submenus/separators, wire TActionList, TStatusBar panels, native TPopupMenu).');
+  Say('7. Callers keep a stable API until enable.');
   Result := 0;
 end;
 

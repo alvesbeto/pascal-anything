@@ -20,6 +20,23 @@ When porting with Pascal Anything, **prefer the official Lazarus / Free Pascal e
 - Keep business logic in non-visual units so `harness` / `gate` stay usable.
 - Document any third-party `.lpk` in the crate `TASK.md` and in the migration plan.
 
+## Canonical LCL GUI guidelines
+
+When porting or generating graphical interfaces with Lazarus LCL:
+
+1. **Native `TMainMenu` bound to Form**:
+   Whenever a form defines a main menu, bind `TForm.Menu := MainMenu` in the `.lfm` and form declaration. This ensures native desktop menu bar integration across operating systems (macOS global menu bar, Windows native menus, Linux GTK/Qt).
+2. **Preserve Complete Menu Hierarchies and Cascaded Submenus**:
+   Never flatten menu trees into a single level. Strictly preserve nested submenus (e.g., `Query -> Explain -> Visual Explain`, `View -> Panels`, `Database -> Engineering -> Reverse Engineer`) by nesting child `TMenuItem` components with their respective separators (`Caption = '-'`). Never emit empty top-level menus (e.g., an `Edit` menu with no actions) or truncated menus.
+3. **Centralized `TActionList` (`TAction`)**:
+   For commands shared between main menus, cascaded submenus, context menus (`TPopupMenu`), toolbars (`TToolBar`), and keyboard shortcuts (`ShortCut`), create actions in a `TActionList`. Bind each functional menu item or tool button directly via `Action := act...` so captions, enabled/checked states, and shortcuts synchronize automatically. Avoid manual glue code between toolbar clicks and menu events.
+4. **Native Status Bar (`TStatusBar`)**:
+   Use `TStatusBar` with dedicated `TStatusPanels` for window footers and status reporting instead of ad-hoc panels (`TPanel`) or loose labels.
+5. **Native Context Menus (`TPopupMenu`)**:
+   Assign native `TPopupMenu` instances directly to the `PopupMenu` property of interactive controls (`TTreeView`, `TPageControl`, `TStringGrid`, etc.), preserving all context submenu hierarchies.
+6. **Official Canonical Controls**:
+   Prioritize standard LCL/FCL components (`TSynEdit`, `TSplitter`, `TPageControl`, `TCheckListBox`, `FPCUnit`) over ad-hoc custom widgets.
+
 ## References
 
 - [Lazarus IDE](https://www.lazarus-ide.org/)
