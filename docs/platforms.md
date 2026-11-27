@@ -15,7 +15,8 @@ Requires `fpc` on `PATH`. The CLI binary is `bin/pascalanything` (`.exe` on Wind
 
 - **Linux:** distro package (`fpc`) or the official tarball under `~/.local`
 - **macOS:** `brew install fpc`
-- **Windows:** [freepascal.org downloads](https://www.freepascal.org/download.html), Chocolatey `choco install freepascal`, or the installer from SourceForge
+- **Windows:** [freepascal.org downloads](https://www.freepascal.org/download.html), Chocolatey `choco install freepascal`, or the installer from SourceForge. After Chocolatey, open a new shell or refresh PATH (`C:\tools\freepascal\bin\i386-win32`). `build.ps1` also probes common install locations.
+
 
 ## Lazarus (optional)
 
