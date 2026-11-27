@@ -12,7 +12,7 @@ function CmdSetup(const ARoot: string): Integer;
 function CmdAnalyze(const ARoot: string; AsJson, WholeApp: Boolean;
   const OutFile, LangOverride: string): Integer;
 function CmdBridge(const ARoot, AUnit, OutDir, PkgName: string;
-  Force: Boolean): Integer;
+  Force: Boolean; const EndState: string = 'replace'): Integer;
 function CmdRecord(const ACrate: string; Count: Integer;
   const InputsFile: string): Integer;
 function CmdBuild(const ACrate: string): Integer;
@@ -93,6 +93,22 @@ begin
     Result := DefaultVal
   else
     Result := D.AsInteger;
+end;
+
+function MarkdownCell(const S: string): string;
+begin
+  Result := StringReplace(StringReplace(S, '`', '''', [rfReplaceAll]), '|', '\|', [rfReplaceAll]);
+end;
+
+function EndStateDescription(const State: string): string;
+begin
+  case LowerCase(State) of
+    'replace': Result := 'replace: delete the original once callers use the Pascal';
+    'bindings': Result := 'bindings: the bindings stay as public API: version and document them';
+    'scaffold': Result := 'scaffold: delete the bindings at cut-over';
+  else
+    Result := 'not chosen';
+  end;
 end;
 
 procedure FindAllFiles(List: TStringList; const ADir: string; Recursive: Boolean);
@@ -426,9 +442,9 @@ begin
 end;
 
 function CmdBridge(const ARoot, AUnit, OutDir, PkgName: string;
-  Force: Boolean): Integer;
+  Force: Boolean; const EndState: string = 'replace'): Integer;
 var
-  Root, UnitPath, Dest, Name, Lang: string;
+  Root, UnitPath, Dest, Name, Lang, NormEndState: string;
   Manifest: TJSONObject;
   ExportList: TJSONArray;
   Exp: TJSONObject;
@@ -443,6 +459,10 @@ begin
     SayErr('unit not found: ' + UnitPath);
     Exit(1);
   end;
+
+  NormEndState := LowerCase(Trim(EndState));
+  if (NormEndState <> 'replace') and (NormEndState <> 'bindings') and (NormEndState <> 'scaffold') then
+    NormEndState := 'replace';
 
   Lang := DetectLang(Root);
   if PkgName <> '' then
@@ -490,6 +510,7 @@ begin
     Manifest.Add('lang', Lang);
     Manifest.Add('target', 'pascal-lazarus');
     Manifest.Add('enabled', False);
+    Manifest.Add('end_state', NormEndState);
     ExportList := TJSONArray.Create;
     Exp := TJSONObject.Create;
     Exp.Add('name', 'TODO');
@@ -504,6 +525,8 @@ begin
 
   Task :=
     '# TASK — port `' + UnitPath + '` → Free Pascal' + LineEnding +
+    LineEnding +
+    '- End state: `' + NormEndState + '` (' + EndStateDescription(NormEndState) + ')' + LineEnding +
     LineEnding +
     '1. Read the original unit and fill `src/port.pas` with the same API.' + LineEnding +
     '2. Prefer official FPC RTL/FCL and Lazarus LCL; then Lazarus CCR / maintained ' +
@@ -731,13 +754,88 @@ begin
     Result.LoadFromFile(APath);
 end;
 
-function CmdDiff(const ACrate: string): Integer;
+function LoadKnownDiffs(const Crate: string): TJSONArray;
 var
-  Crate, CasesPath, BinHarness, OutS, ErrS, Line: string;
-  Code, I, Mismatch, Total: Integer;
-  Expected, Got: TStringList;
-  EObj, GObj: TJSONData;
+  KnownPath: string;
+  Lines: TStringList;
+  I: Integer;
+  Data: TJSONData;
 begin
+  Result := TJSONArray.Create;
+  KnownPath := PathJoin(Crate, KnownDiffsFileName);
+  if not FileExists(KnownPath) then
+    Exit;
+  Lines := LoadJsonl(KnownPath);
+  try
+    for I := 0 to Lines.Count - 1 do
+    begin
+      if Trim(Lines[I]) = '' then
+        Continue;
+      try
+        Data := GetJSON(Lines[I]);
+        if Data is TJSONObject then
+          Result.Add(Data)
+        else
+          Data.Free;
+      except
+        { ignore malformed json lines }
+      end;
+    end;
+  finally
+    Lines.Free;
+  end;
+end;
+
+function MatchKnownDiff(KnownList: TJSONArray; const FnName: string;
+  ArgsData, GotOk: TJSONData; out Reason: string): Boolean;
+var
+  I: Integer;
+  Item: TJSONObject;
+  KFn: string;
+  KArgs, KActual: TJSONData;
+begin
+  Result := False;
+  Reason := '';
+  if KnownList = nil then
+    Exit;
+  for I := 0 to KnownList.Count - 1 do
+  begin
+    if not (KnownList[I] is TJSONObject) then
+      Continue;
+    Item := TJSONObject(KnownList[I]);
+    KFn := JsonStr(Item, 'fn', JsonStr(Item, 'function', ''));
+    if (KFn <> '') and (KFn <> FnName) then
+      Continue;
+    KArgs := Item.Find('args');
+    if (KArgs <> nil) and (ArgsData <> nil) then
+    begin
+      if KArgs.AsJSON <> ArgsData.AsJSON then
+        Continue;
+    end;
+    KActual := Item.Find('actual');
+    if (KActual <> nil) and (GotOk <> nil) then
+    begin
+      if KActual.AsJSON <> GotOk.AsJSON then
+        Continue;
+    end;
+    Reason := JsonStr(Item, 'reason', 'intended difference');
+    Exit(True);
+  end;
+end;
+
+function CmdDiffInternal(const ACrate: string; out Matched, Total, Accepted, Mismatch: Integer): Integer;
+var
+  Crate, CasesPath, BinHarness, OutS, ErrS, Line, Reason, FnName: string;
+  Code, I: Integer;
+  Expected, Got: TStringList;
+  EObj, GObj, EOk, GOk, ArgsData: TJSONData;
+  KnownList: TJSONArray;
+  IsDiff: Boolean;
+begin
+  Matched := 0;
+  Total := 0;
+  Accepted := 0;
+  Mismatch := 0;
   Crate := AbsolutePath(ACrate);
   CasesPath := PathJoin(Crate, CasesFileName);
   if not FileExists(CasesPath) then
@@ -760,12 +858,11 @@ begin
     Exit(1);
   end;
 
+  KnownList := LoadKnownDiffs(Crate);
   Expected := LoadJsonl(CasesPath);
   Got := TStringList.Create;
   try
     Got.Text := OutS;
-    Mismatch := 0;
-    Total := 0;
     for I := 0 to Expected.Count - 1 do
     begin
       Line := Trim(Expected[I]);
@@ -782,23 +879,43 @@ begin
         EObj := GetJSON(Line);
         GObj := GetJSON(Trim(Got[I]));
         try
-          if EObj.AsJSON <> GObj.AsJSON then
+          IsDiff := False;
+          EOk := nil;
+          GOk := nil;
+          FnName := '';
+          ArgsData := nil;
+
+          if (EObj is TJSONObject) and (GObj is TJSONObject) then
           begin
-            if (EObj is TJSONObject) and (GObj is TJSONObject) and
-               (TJSONObject(EObj).Find('ok') <> nil) then
+            FnName := JsonStr(TJSONObject(EObj), 'fn', '');
+            ArgsData := TJSONObject(EObj).Find('args');
+            EOk := TJSONObject(EObj).Find('ok');
+            GOk := TJSONObject(GObj).Find('ok');
+            if EOk <> nil then
             begin
-              if (TJSONObject(GObj).Find('ok') = nil) or
-                 (TJSONObject(EObj).Find('ok').AsJSON <>
-                  TJSONObject(GObj).Find('ok').AsJSON) then
-              begin
-                Inc(Mismatch);
-                Say(Format('[%d] mismatch ok', [I]));
-              end;
+              if (GOk = nil) or (EOk.AsJSON <> GOk.AsJSON) then
+                IsDiff := True;
+            end
+            else if EObj.AsJSON <> GObj.AsJSON then
+              IsDiff := True;
+          end
+          else if EObj.AsJSON <> GObj.AsJSON then
+            IsDiff := True;
+
+          if IsDiff then
+          begin
+            if MatchKnownDiff(KnownList, FnName, ArgsData, GOk, Reason) then
+            begin
+              Inc(Accepted);
+              Say(Format('[%d] accepted by %s (%s): %s', [I, KnownDiffsFileName, FnName, Reason]));
             end
             else
             begin
               Inc(Mismatch);
-              Say(Format('[%d] mismatch', [I]));
+              if EOk <> nil then
+                Say(Format('[%d] mismatch ok', [I]))
+              else
+                Say(Format('[%d] mismatch', [I]));
             end;
           end;
         finally
@@ -813,15 +930,27 @@ begin
         end;
       end;
     end;
-    Say(Format('diff: %d/%d ok, %s', [Total - Mismatch, Total, CountNoun(Mismatch, 'mismatch', 'mismatches')]));
+    Matched := Total - Mismatch;
+    if Accepted > 0 then
+      Say(Format('diff: %d/%d ok (%d by %s), %s', [Matched, Total, Accepted, KnownDiffsFileName, CountNoun(Mismatch, 'mismatch', 'mismatches')]))
+    else
+      Say(Format('diff: %d/%d ok, %s', [Matched, Total, CountNoun(Mismatch, 'mismatch', 'mismatches')]));
     if Mismatch = 0 then
       Result := 0
     else
       Result := 1;
   finally
+    KnownList.Free;
     Expected.Free;
     Got.Free;
   end;
+end;
+
+function CmdDiff(const ACrate: string): Integer;
+var
+  Matched, Total, Accepted, Mismatch: Integer;
+begin
+  Result := CmdDiffInternal(ACrate, Matched, Total, Accepted, Mismatch);
 end;
 
 function GateCheck(const Name: string; Passed: Boolean; const Detail, Fix: string;
@@ -850,9 +979,15 @@ var
   PortPath, CasesPath: string;
   PortSrc: string;
   HasTodo: Boolean;
+  Matched, Total, Accepted, Mismatches, BaselineKnown, AddedKnown: Integer;
+  Detail: string;
 begin
   Crate := AbsolutePath(ACrate);
   Failures := 0;
+  Matched := 0;
+  Total := 0;
+  Accepted := 0;
+  Mismatches := 0;
   Say('gate ' + Crate);
 
   GateCheck('manifest', FileExists(PathJoin(Crate, ManifestFileName)),
@@ -881,8 +1016,29 @@ begin
   if FileExists(CasesPath) and
      (ResolveBinary(PathJoin3(Crate, 'bin', 'harness')) <> '') then
   begin
-    if CmdDiff(Crate) = 0 then
-      GateCheck('behavior', True, 'all cases match', '', Failures)
+    if CmdDiffInternal(Crate, Matched, Total, Accepted, Mismatches) = 0 then
+    begin
+      BaselineKnown := 0;
+      if LoadManifest(Crate, Manifest) then
+      try
+        BaselineKnown := JsonInt(Manifest, 'known_diffs', 0);
+      finally
+        Manifest.Free;
+      end;
+
+      AddedKnown := 0;
+      if Accepted > BaselineKnown then
+        AddedKnown := Accepted - BaselineKnown;
+
+      Detail := Format('%d/%d recorded cases match', [Matched, Total]);
+      if (Accepted > 0) and (AddedKnown > 0) then
+        Detail := Format('%s (%d by %s, %s added since the last passing gate: land behavior changes apart from the port)',
+          [Detail, Accepted, KnownDiffsFileName, CountNoun(AddedKnown, 'entry', 'entries')])
+      else if Accepted > 0 then
+        Detail := Format('%s (%d by %s)', [Detail, Accepted, KnownDiffsFileName]);
+
+      GateCheck('behavior', True, Detail, '', Failures);
+    end
     else
       GateCheck('behavior', False, 'mismatches remain',
         'pascal-anything diff ' + Crate, Failures);
@@ -892,6 +1048,8 @@ begin
   try
     Manifest.Booleans['gate_passed'] := Failures = 0;
     Manifest.Strings['gate_at'] := FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', Now);
+    if Failures = 0 then
+      Manifest.Integers['known_diffs'] := Accepted;
     WriteManifest(Crate, Manifest);
   finally
     Manifest.Free;
@@ -947,10 +1105,13 @@ end;
 
 function CmdReport(const ACrate: string): Integer;
 var
-  Crate, ReportDir: string;
-  Manifest: TJSONObject;
-  Md: TStringList;
-  Cases: Integer;
+  Crate, ReportDir, KnownPath, Lang, KArgsStr, EndState: string;
+  Manifest, KObj, ExpObj: TJSONObject;
+  Md, KnownLines: TStringList;
+  Cases, I: Integer;
+  HasHeader, HasKeptHeader: Boolean;
+  KData, KArgs: TJSONData;
+  ExportArr: TJSONArray;
 begin
   Crate := AbsolutePath(ACrate);
   if not LoadManifest(Crate, Manifest) then
@@ -960,17 +1121,98 @@ begin
   end;
   try
     Cases := JsonInt(Manifest, 'case_count', 0);
+    Lang := JsonStr(Manifest, 'lang', 'original language');
+    EndState := JsonStr(Manifest, 'end_state', '');
     ReportDir := PathJoin(Crate, 'report');
     EnsureDir(ReportDir);
     Md := TStringList.Create;
     try
       Md.Add('# pascal-anything report');
       Md.Add('');
-      Md.Add('- package: `' + JsonStr(Manifest, 'package_name', '') + '`');
-      Md.Add('- unit: `' + JsonStr(Manifest, 'unit', '') + '`');
-      Md.Add('- cases: ' + IntToStr(Cases));
-      Md.Add('- gate: ' + BoolToStr(JsonBool(Manifest, 'gate_passed', False), True));
-      Md.Add('- enabled: ' + BoolToStr(JsonBool(Manifest, 'enabled', False), True));
+      Md.Add('| Metric | Value |');
+      Md.Add('| --- | --- |');
+      Md.Add('| Package | `' + MarkdownCell(JsonStr(Manifest, 'package_name', '')) + '` |');
+      Md.Add('| Unit | `' + MarkdownCell(JsonStr(Manifest, 'unit', '')) + '` |');
+      Md.Add('| Cases | ' + IntToStr(Cases) + ' |');
+      Md.Add('| End state | ' + EndStateDescription(EndState) + ' |');
+      Md.Add('| Gate passed | ' + BoolToStr(JsonBool(Manifest, 'gate_passed', False), True) + ' |');
+      Md.Add('| Switched on | ' + BoolToStr(JsonBool(Manifest, 'enabled', False), True) + ' |');
+
+      KnownPath := PathJoin(Crate, KnownDiffsFileName);
+      if FileExists(KnownPath) then
+      begin
+        KnownLines := LoadJsonl(KnownPath);
+        try
+          HasHeader := False;
+          for I := 0 to KnownLines.Count - 1 do
+          begin
+            if Trim(KnownLines[I]) = '' then
+              Continue;
+            try
+              KData := GetJSON(KnownLines[I]);
+              if KData is TJSONObject then
+              begin
+                KObj := TJSONObject(KData);
+                if not HasHeader then
+                begin
+                  Md.Add('');
+                  Md.Add('### Intended differences');
+                  Md.Add('');
+                  Md.Add('From `' + KnownDiffsFileName + '`: the port is meant to differ on these inputs.');
+                  Md.Add('');
+                  Md.Add('| Function | Input | Reason |');
+                  Md.Add('| --- | --- | --- |');
+                  HasHeader := True;
+                end;
+                KArgs := KObj.Find('args');
+                KArgsStr := '';
+                if KArgs <> nil then
+                  KArgsStr := KArgs.AsJSON;
+                Md.Add(Format('| `%s` | `%s` | %s |', [
+                  MarkdownCell(JsonStr(KObj, 'fn', JsonStr(KObj, 'function', ''))),
+                  MarkdownCell(KArgsStr),
+                  MarkdownCell(JsonStr(KObj, 'reason', 'intended difference'))
+                ]));
+              end;
+            finally
+              KData.Free;
+            end;
+          end;
+        finally
+          KnownLines.Free;
+        end;
+      end;
+
+      if Manifest.Find('exports') is TJSONArray then
+      begin
+        ExportArr := TJSONArray(Manifest.Find('exports'));
+        HasKeptHeader := False;
+        for I := 0 to ExportArr.Count - 1 do
+        begin
+          if ExportArr[I] is TJSONObject then
+          begin
+            ExpObj := TJSONObject(ExportArr[I]);
+            if JsonBool(ExpObj, 'kept', False) or (JsonStr(ExpObj, 'reason', '') <> '') then
+            begin
+              if not HasKeptHeader then
+              begin
+                Md.Add('');
+                Md.Add('### Kept in ' + Lang);
+                Md.Add('');
+                Md.Add('| Export | Where | Reason |');
+                Md.Add('| --- | --- | --- |');
+                HasKeptHeader := True;
+              end;
+              Md.Add(Format('| `%s` | `%s` | %s |', [
+                MarkdownCell(JsonStr(ExpObj, 'name', '')),
+                MarkdownCell(JsonStr(ExpObj, 'file', '')),
+                MarkdownCell(JsonStr(ExpObj, 'reason', JsonStr(ExpObj, 'note', '')))
+              ]));
+            end;
+          end;
+        end;
+      end;
+
       Md.Add('');
       Md.Add('Generated by ' + AppName + ' ' + AppVersion);
       WriteTextFile(PathJoin(ReportDir, 'REPORT.md'), Md.Text);
@@ -1042,7 +1284,7 @@ begin
   Say('  doctor                         check fpc/lazbuild/runtimes');
   Say('  setup [repo]                   install skill + MCP snippet for agents');
   Say('  analyze [root] [--json] [--whole-app] [--lang L] [-o file]');
-  Say('  bridge <root> <unit> [--out DIR] [--name NAME] [--force]');
+  Say('  bridge <root> <unit> [--out DIR] [--name NAME] [--end-state S] [--force]');
   Say('  record [crate] [--count N] [--inputs file.jsonl]');
   Say('  build [crate]');
   Say('  diff [crate]');

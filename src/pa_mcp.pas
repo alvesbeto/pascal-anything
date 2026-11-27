@@ -118,6 +118,7 @@ begin
   S := EmptySchema;
   StringProp(S, 'root', 'Repository root', True);
   StringProp(S, 'unit', 'Unit path from analyze', True);
+  StringProp(S, 'end_state', 'End state: replace (default), bindings or scaffold', False);
   Result.Add(ToolDef('bridge', 'Scaffold FPC package for one unit', S));
 
   S := EmptySchema;
@@ -182,7 +183,8 @@ begin
       'doctor': Code := CmdDoctor;
       'rules': Code := CmdRules;
       'analyze': Code := CmdAnalyze(Root, False, False, '', '');
-      'bridge': Code := CmdBridge(ArgStr(Args, 'root', ''), UnitId, '', '', False);
+      'bridge': Code := CmdBridge(ArgStr(Args, 'root', ''), UnitId, '', '', False,
+        ArgStr(Args, 'end_state', 'replace'));
       'record': Code := CmdRecord(Crate, 50, Inputs);
       'build': Code := CmdBuild(Crate);
       'diff': Code := CmdDiff(Crate);

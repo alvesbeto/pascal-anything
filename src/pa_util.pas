@@ -9,7 +9,7 @@ uses
 
 const
   AppName = 'pascal-anything';
-  AppVersion = '0.3.4';
+  AppVersion = '0.3.5';
   SchemaBridge = 'pascal-anything/bridge@1';
   SchemaAnalyze = 'pascal-anything/analyze@1';
   CasesFileName = 'cases.jsonl';

@@ -55,16 +55,17 @@ Precisa do Free Pascal no `PATH`. Detalhes: [`docs/platforms.md`](docs/platforms
 ## O loop
 
 ```
-analyze → bridge → record → port.pas → build → diff → gate → enable
+analyze → bridge → record → port.pas → build → diff → gate → report → enable
 ```
 
 | Comando | Função |
 | --- | --- |
 | `analyze` | Mapa do repositório e ordem de migração → Pascal/Lazarus |
-| `bridge` | Pacote FPC com `src/port.pas` e `harness.lpr` |
+| `bridge` | Pacote FPC com `src/port.pas`, `harness.lpr` e `--end-state` |
 | `record` | Gera `cases.jsonl` a partir do original (Python executa o módulo) |
-| `build` / `diff` | Compila o harness e compara os casos |
-| `gate` | Critério de pronto de uma unidade |
+| `build` / `diff` | Compila o harness e compara os casos (respeita `known-diffs.jsonl`) |
+| `gate` | Critério de pronto de uma unidade (rastreia comportamento e known diffs) |
+| `report` | Relatório de revisão em `report/REPORT.md` (end-state, métricas, intended diffs) |
 | `go` | Atalho para a unidade candidata óbvia |
 | `setup` / `doctor` | Skill nos agentes + checagem de ferramentas |
 | `mcp` | Ferramentas MCP stdio dos mesmos passos |

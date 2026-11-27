@@ -32,19 +32,23 @@ pascal-anything gate pascal/<unit>_pas
 ## The loop (one unit)
 
 1. `pascal-anything analyze <repo>` — ranked units, target Pascal/Lazarus.
-2. `pascal-anything bridge <repo> <unit>` — package + `port.pas` + `TASK.md`.
+2. `pascal-anything bridge <repo> <unit> [--end-state replace|bindings|scaffold]` — package + `port.pas` + `TASK.md`.
 3. `pascal-anything record <crate>` — write `cases.jsonl` (fill `ok` from the original).
 4. You (the agent) implement `src/port.pas` and wire `harness.lpr` by function name.
 5. `pascal-anything build <crate>` then `pascal-anything diff <crate>`.
 6. `pascal-anything gate <crate>` — definition of done.
-7. `pascal-anything enable <crate>` only after gate passes.
-8. Report to the user and **wait** before the next unit.
+7. `pascal-anything report <crate>` — generate reviewer report in `report/REPORT.md`.
+8. `pascal-anything enable <crate>` only after gate passes.
+9. Report to the user and **wait** before the next unit.
 
 ## Hard rules
 
 - The original is the source of truth.
 - Do not paste recorded results into the port.
 - Do not weaken tests or edit `cases.jsonl` to force a pass.
+- A port preserves original behavior, bugs included; fixes land in a separate change after `gate` passes.
+- Intended behavior differences must be documented in `known-diffs.jsonl` with an explicit reason (`{"fn": "...", "args": [...], "reason": "..."}`).
+- Reviewer reporting: run `pascal-anything report <crate>` to write `report/REPORT.md` documenting end state, metrics, intended differences from `known-diffs.jsonl`, and kept exports.
 - Prefer Free Pascal style: `{$mode objfpc}{$H+}`, clear units, no unnecessary LCL for CLI ports.
 - **Always prefer official Lazarus/FPC components** (RTL/FCL, LCL) and relevant maintained Lazarus packages/frameworks (CCR, domain libs) over custom widgets or foreign GUI toolkits. See [docs/stack.md](../../docs/stack.md).
 - GUI ports use Lazarus LCL; keep business logic in non-visual units.

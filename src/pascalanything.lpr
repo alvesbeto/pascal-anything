@@ -58,7 +58,7 @@ begin
     if (S = '--json') or (S = '--whole-app') or (S = '--force') then
       Continue;
     if (S = '--lang') or (S = '-o') or (S = '--out') or (S = '--name') or
-       (S = '--count') or (S = '--inputs') then
+       (S = '--count') or (S = '--inputs') or (S = '--end-state') then
     begin
       Inc(Idx); { skip value }
       Continue;
@@ -121,14 +121,15 @@ begin
         UnitId := NextPositional(Idx);
         if (Root = '') or (UnitId = '') then
         begin
-          SayErr('usage: pascal-anything bridge <root> <unit>');
+          SayErr('usage: pascal-anything bridge <root> <unit> [--end-state replace|bindings|scaffold]');
           Code := 2;
         end
         else
         begin
           OutDir := OptValue('--out', '');
           Name := OptValue('--name', '');
-          Code := CmdBridge(Root, UnitId, OutDir, Name, HasFlag('--force'));
+          Code := CmdBridge(Root, UnitId, OutDir, Name, HasFlag('--force'),
+            OptValue('--end-state', 'replace'));
         end;
       end;
     'record':

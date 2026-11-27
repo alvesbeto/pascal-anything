@@ -18,6 +18,7 @@
   "case_count" : 4,
   "built_at" : "2026-11-27T09:25:06",
   "gate_passed" : true,
-  "gate_at" : "2026-11-27T09:25:16",
-  "recorder" : "python"
+  "gate_at" : "2026-11-27T16:25:28",
+  "recorder" : "python",
+  "known_diffs" : 0
 }

@@ -1,8 +1,8 @@
 {
   "upstream": "https://github.com/erkamyaman/rust-anything",
-  "lastSeenSha": "086e4f369810c4ba5fc2cf4f93565118dc3ac783",
-  "lastSeenMessage": "fix(analyze): flag Python bitwise &=, |=, ^= and >>= as Number semantics (#768)",
-  "lastSeenAt": "2026-11-27T15:47:15Z",
-  "lastCheckedAt": "2026-11-27T16:21:00Z",
-  "notes": "Ported LF line endings via .gitattributes, singular/plural CLI count formatting across diff/gate/record/report, and fixed report terminology."
+  "lastSeenSha": "a74fa8ed4330ce485285f39c317df75f970cc4c6",
+  "lastSeenMessage": "README translations: How it works graphic in each language",
+  "lastSeenAt": "2026-11-27T18:41:18Z",
+  "lastCheckedAt": "2026-11-27T19:25:00Z",
+  "notes": "Ported bridge --end-state modeling (replace|bindings|scaffold), reviewer report in REPORT.md with intended differences and kept exports, and known-diffs.jsonl diff/gate tracking."
 }

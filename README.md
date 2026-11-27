@@ -55,16 +55,17 @@ Needs Free Pascal on `PATH`. Details: [`docs/platforms.md`](docs/platforms.md).
 ## The loop
 
 ```
-analyze → bridge → record → port.pas → build → diff → gate → enable
+analyze → bridge → record → port.pas → build → diff → gate → report → enable
 ```
 
 | Command | Role |
 | --- | --- |
 | `analyze` | Map the repo and migration order → Pascal/Lazarus |
-| `bridge` | FPC package with `src/port.pas` and `harness.lpr` |
+| `bridge` | FPC package with `src/port.pas`, `harness.lpr`, and `--end-state` |
 | `record` | Write `cases.jsonl` from the original (Python runs the real module) |
-| `build` / `diff` | Compile the harness and compare cases |
-| `gate` | Definition of done for one unit |
+| `build` / `diff` | Compile the harness and compare cases (honors `known-diffs.jsonl`) |
+| `gate` | Definition of done for one unit (tracks behavior & known diffs) |
+| `report` | Reviewer report in `report/REPORT.md` (end-state, metrics, intended diffs) |
 | `go` | Shortcut for the obvious candidate unit |
 | `setup` / `doctor` | Agent skill + toolchain checks |
 | `mcp` | MCP stdio tools for the same steps |
