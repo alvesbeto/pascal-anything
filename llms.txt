@@ -1,0 +1,33 @@
+# Pascal Anything
+
+> Rewrite an app in Free Pascal / Lazarus one piece at a time, checked against the original at every step. Conceptual port of rust-anything: record what the original does, replay every case against the Pascal port. Done when `pascal-anything gate` passes. MIT OR Apache-2.0.
+
+## Install
+
+```sh
+export PATH="$HOME/.local/bin:$HOME/.local/lib/fpc/3.2.2:$PATH"
+cd src && fpc -O2 -Fu. -FE../bin pascalanything.lpr
+ln -sfn "$(pwd)/../bin/pascalanything" "$HOME/.local/bin/pascal-anything"
+pascal-anything setup
+pascal-anything doctor
+```
+
+Lazarus (optional, headless): `fpclazup --fpcURL=stable --lazURL=stable --installdir=$HOME/.local/fpclaz --fpcsplit --noconfirm`
+
+## Prompt for a coding agent
+
+Install Pascal Anything, run `pascal-anything setup`. Run `pascal-anything go -- <slow command>`, port `src/port.pas` as TASK.md says. Done when every recorded case matches and `pascal-anything gate` passes.
+
+## Main commands
+
+- `pascal-anything go` — pick a candidate unit and start the loop
+- `pascal-anything record` — record original (Python runs the real module)
+- `pascal-anything diff` / `gate` — prove the Pascal port
+- `pascal-anything mcp` — MCP stdio tools (analyze, bridge, record, build, diff, gate, doctor, rules)
+
+## Docs
+
+- [How it works](docs/how-it-works.md)
+- [SDD](docs/SDD.md)
+- [Research notes](docs/research.md)
+- Upstream inspiration: https://github.com/erkamyaman/rust-anything · https://rustanything.ai/llms.txt

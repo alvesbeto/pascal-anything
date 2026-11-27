@@ -1,0 +1,16 @@
+bin/
+*.o
+*.ppu
+*.a
+*.or
+*.rsj
+*.compiled
+*.exe
+lib/
+backup/
+*.lps
+*.dbg
+.DS_Store
+**/pascal/**/bin/
+*.lps
+logs/

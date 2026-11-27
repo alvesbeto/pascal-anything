@@ -1,0 +1,4 @@
+{"fn":"slugify","args":["Hello, Pascal!"],"ok":"hello-pascal"}
+{"fn":"slugify","args":["  Foo   Bar  "],"ok":"foo-bar"}
+{"fn":"slugify","args":["Already-ok"],"ok":"already-ok"}
+{"fn":"slugify","args":[""],"ok":""}
