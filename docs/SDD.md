@@ -15,6 +15,8 @@ CLI + agent skills to migrate any codebase to Free Pascal/Lazarus with behaviora
 | D5 | English as project language; `README.pt-BR.md` for Brazilian Portuguese | Shared engineering language; local docs stay reachable |
 | D6 | First-class Windows / Linux / macOS | Same CLI surface; OS-specific build scripts + CI matrix |
 | D7 | Evidence-first docs (awesome-REA patterns) | Gate claims need evidence; EN/PT README parity validated in CI |
+| D8 | Official Lazarus/FPC stack first | Ports use RTL/FCL, LCL, then CCR/maintained frameworks — not ad-hoc UI toolkits ([docs/stack.md](stack.md)) |
+
 
 ## Status
 
@@ -23,6 +25,8 @@ CLI + agent skills to migrate any codebase to Free Pascal/Lazarus with behaviora
 - v0.2.1: English-first docs/CLI; PT-BR README cross-link
 - v0.3.0: cross-platform paths/executables, `build.ps1`, GitHub Actions on Ubuntu/macOS/Windows
 - v0.3.1: AGENTS/CONTRIBUTING/FAQ/showcase, `validate_project.py` in CI; awesome-REA tracker
+- v0.3.2: stack preference — official Lazarus/FCL/LCL (+ CCR/frameworks); `docs/stack.md`
+
 - OpenBot routine `rust-anything-upstream-sync`: hourly (America/Sao_Paulo :15), thread; tracker `docs/upstream-rust-anything.json`
 - OpenBot routine `awesome-rea-upstream-sync`: hourly (America/Sao_Paulo :45), thread; tracker `docs/upstream-awesome-rea.json`
 - Pending: TS/JS/Go recorders, shadow/bench/fuzz, Cursor MCP merge, skill-eval

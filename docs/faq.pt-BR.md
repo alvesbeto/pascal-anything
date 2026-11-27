@@ -18,9 +18,14 @@ Não. O Pascal Anything assume que você tem o **código-fonte** do programa. Fe
 
 Só quando `pascal-anything gate <crate>` passa. Divergências no diff exigem corrigir o port, não a gravação.
 
+## Qual stack de UI / bibliotecas os ports devem usar?
+
+**RTL/FCL do Free Pascal** e **LCL do Lazarus** primeiro; depois Lazarus CCR ou outros frameworks FPC/Lazarus mantidos e relevantes ao domínio. Veja [stack.pt-BR.md](stack.pt-BR.md).
+
 ## Quais plataformas?
 
 Windows, Linux e macOS. Veja [platforms.md](platforms.md).
+
 
 ## Onde está o fluxo do agente?
 

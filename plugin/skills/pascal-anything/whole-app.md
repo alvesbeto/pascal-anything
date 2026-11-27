@@ -28,3 +28,5 @@ analyze --whole-app → record app behavior → front door (Pascal owns entry) �
 - Non-visual logic lives in units under `pascal/`.
 - Forms/frames only for UI; business rules stay testable via `harness`.
 - Use `lazbuild` when available; otherwise `fpc` for console packages.
+- Prefer **official LCL controls and FCL/RTL units**, then Lazarus CCR / maintained packages, then relevant domain frameworks. Do not invent a parallel UI stack. See [docs/stack.md](../../docs/stack.md).
+

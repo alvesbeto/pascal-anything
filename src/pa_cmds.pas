@@ -339,7 +339,8 @@ begin
           Md.Add('');
           Md.Add('- root: `' + Root + '`');
           Md.Add('- detected language: **' + Lang + '**');
-          Md.Add('- target: **Pascal/Lazarus** (FPC package + `port.pas` stubs)');
+          Md.Add('- target: **Pascal/Lazarus** (FPC package + `port.pas` stubs; official LCL/FCL first)');
+
           if WholeApp then
             Md.Add('- mode: whole app (unit by unit, then lift)');
           Md.Add('');
@@ -505,12 +506,15 @@ begin
     '# TASK — port `' + UnitPath + '` → Free Pascal' + LineEnding +
     LineEnding +
     '1. Read the original unit and fill `src/port.pas` with the same API.' + LineEnding +
-    '2. `pascal-anything record ' + Dest + '`' + LineEnding +
-    '3. Wire `harness.lpr` to dispatch each `fn` from `cases.jsonl`.' + LineEnding +
-    '4. `pascal-anything build ' + Dest + '` && `pascal-anything diff ' + Dest + '`' + LineEnding +
-    '5. Call it done only when `pascal-anything gate ' + Dest + '` passes.' + LineEnding +
+    '2. Prefer official FPC RTL/FCL and Lazarus LCL; then Lazarus CCR / maintained ' +
+      'domain frameworks. No ad-hoc or foreign GUI stacks unless the user asks.' + LineEnding +
+    '3. `pascal-anything record ' + Dest + '`' + LineEnding +
+    '4. Wire `harness.lpr` to dispatch each `fn` from `cases.jsonl`.' + LineEnding +
+    '5. `pascal-anything build ' + Dest + '` && `pascal-anything diff ' + Dest + '`' + LineEnding +
+    '6. Call it done only when `pascal-anything gate ' + Dest + '` passes.' + LineEnding +
     LineEnding +
     'Do not paste recorded results into source. Do not weaken tests.' + LineEnding;
+
   WriteTextFile(PathJoin(Dest, TaskFileName), Task);
 
   Say('Bridge created at ' + Dest);
@@ -1013,7 +1017,8 @@ begin
   Say('2. One unit at a time; gate must pass before the next.');
   Say('3. Do not paste cases.jsonl results into source.');
   Say('4. Do not weaken tests or edit cases to force a pass.');
-  Say('5. Target: Free Pascal + Lazarus (.lpk/.pas packages; LCL for GUI).');
+  Say('5. Target: Free Pascal + Lazarus (.lpk/.pas; official LCL/FCL first, then CCR/frameworks).');
+
   Say('6. Callers keep a stable API until enable.');
   Result := 0;
 end;

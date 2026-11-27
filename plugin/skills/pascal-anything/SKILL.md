@@ -45,7 +45,9 @@ pascal-anything gate pascal/<unit>_pas
 - Do not paste recorded results into the port.
 - Do not weaken tests or edit `cases.jsonl` to force a pass.
 - Prefer Free Pascal style: `{$mode objfpc}{$H+}`, clear units, no unnecessary LCL for CLI ports.
+- **Always prefer official Lazarus/FPC components** (RTL/FCL, LCL) and relevant maintained Lazarus packages/frameworks (CCR, domain libs) over custom widgets or foreign GUI toolkits. See [docs/stack.md](../../docs/stack.md).
 - GUI ports use Lazarus LCL; keep business logic in non-visual units.
+
 
 ## Install
 

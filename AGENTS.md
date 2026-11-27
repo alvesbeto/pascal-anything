@@ -14,6 +14,11 @@ Inspiration for verification culture and bilingual docs also comes from the cura
 
 **Do not claim a port is done unless `pascal-anything gate` passes on that crate**, with a recording that still matches the original. Do not paste `cases.jsonl` results into source. Do not edit cases to force a pass.
 
+## Stack preference (always)
+
+Prefer **official Lazarus / Free Pascal components and relevant FPC/Lazarus frameworks** over custom UI or foreign toolkits. Order: RTL/FCL → official LCL → Lazarus CCR / maintained packages → domain frameworks → thin FFI. Details: [`docs/stack.md`](docs/stack.md).
+
+
 ## Language
 
 - English for code, commits, CLI messages, skills, and primary docs
@@ -54,3 +59,5 @@ If you touched record/diff/gate, re-run the slug demo gate when feasible.
 - claim reverse-engineering of proprietary binaries as this project's purpose
 - update only one of README.md / README.pt-BR.md for shared sections
 - invent affiliation with rust-anything, REA, or awesome-REA beyond "inspired by" / citation
+- replace LCL/FCL with ad-hoc or non-Lazarus GUI stacks unless the user explicitly asks
+

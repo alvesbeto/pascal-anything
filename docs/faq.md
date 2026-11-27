@@ -18,9 +18,14 @@ No. Pascal Anything assumes you have the **source** of the program you are porti
 
 Only when `pascal-anything gate <crate>` passes. Diff mismatches mean fix the port, not the recording (unless the user intentionally documents a known difference later).
 
+## Which UI / library stack should ports use?
+
+Official **Free Pascal RTL/FCL** and **Lazarus LCL** first, then Lazarus CCR or other maintained FPC/Lazarus frameworks relevant to the domain. See [stack.md](stack.md).
+
 ## Which platforms?
 
 Windows, Linux, and macOS. See [platforms.md](platforms.md).
+
 
 ## Where is the agent workflow?
 

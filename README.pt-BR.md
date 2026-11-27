@@ -12,7 +12,8 @@ Reescreva seu app em Free Pascal / Lazarus e prove que o comportamento continua 
 </p>
 
 <p align="center">
-<b>Docs:</b> <a href="docs/how-it-works.md">como funciona</a> · <a href="docs/faq.pt-BR.md">FAQ</a> · <a href="docs/showcase.md">showcase</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a> · <a href="CONTRIBUTING.md">contribuindo</a>
+<b>Docs:</b> <a href="docs/how-it-works.md">como funciona</a> · <a href="docs/stack.pt-BR.md">stack</a> · <a href="docs/faq.pt-BR.md">FAQ</a> · <a href="docs/showcase.md">showcase</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a> · <a href="CONTRIBUTING.md">contribuindo</a>
+
 </p>
 
 

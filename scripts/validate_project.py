@@ -28,7 +28,10 @@ REQUIRED_FILES = [
     "docs/faq.md",
     "docs/faq.pt-BR.md",
     "docs/showcase.md",
+    "docs/stack.md",
+    "docs/stack.pt-BR.md",
     "docs/translations.md",
+
     "docs/research.md",
     "docs/upstream-rust-anything.json",
     "docs/upstream-awesome-rea.json",

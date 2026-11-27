@@ -22,9 +22,15 @@ Install Pascal Anything, run `pascal-anything setup`. Run `pascal-anything go --
 - `pascal-anything diff` / `gate` — prove the Pascal port
 - `pascal-anything mcp` — MCP stdio tools (analyze, bridge, record, build, diff, gate, doctor, rules)
 
+## Stack
+
+Prefer official Free Pascal RTL/FCL and Lazarus LCL, then Lazarus CCR / maintained domain frameworks. Do not invent a parallel UI stack. See docs/stack.md.
+
 ## Docs
 
 - [How it works](docs/how-it-works.md)
+- [Preferred stack](docs/stack.md)
 - [SDD](docs/SDD.md)
 - [Research notes](docs/research.md)
 - Upstream inspiration: https://github.com/erkamyaman/rust-anything · https://rustanything.ai/llms.txt
+

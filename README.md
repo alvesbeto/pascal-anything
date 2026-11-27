@@ -12,7 +12,8 @@ Rewrite your app in Free Pascal / Lazarus, and prove it still behaves the same.
 </p>
 
 <p align="center">
-<b>Docs:</b> <a href="docs/how-it-works.md">how it works</a> · <a href="docs/faq.md">FAQ</a> · <a href="docs/showcase.md">showcase</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a> · <a href="CONTRIBUTING.md">contributing</a>
+<b>Docs:</b> <a href="docs/how-it-works.md">how it works</a> · <a href="docs/stack.md">stack</a> · <a href="docs/faq.md">FAQ</a> · <a href="docs/showcase.md">showcase</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a> · <a href="CONTRIBUTING.md">contributing</a>
+
 </p>
 
 
