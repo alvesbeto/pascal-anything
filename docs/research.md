@@ -17,6 +17,13 @@
   Refs: [Fpcupdeluxe wiki](https://wiki.freepascal.org/Fpcupdeluxe), [pascal.chat Ansible](https://pascal.chat/wiki/Installation_on_Linux_with_Ansible)
 - Or system packages: `sudo apt install lazarus` → `/usr/bin/lazbuild`
 
+## awesome-reverse-engineer-anything (inspiration)
+
+- Repo: https://github.com/AIshihzong/awesome-reverse-engineer-anything
+- Role: curated list; rust-anything appears under **Behaviour-checked rewrites** (source available), separate from REA/AI-RE
+- Portable to Pascal Anything: AGENTS one-rule + tags, CONTRIBUTING checklist, bilingual section parity validator, FAQ (REA vs rewrite), showcase evidence table, PR templates
+- Skip: REA/Craft binary tooling as product features; turning this README into an awesome-list
+
 ## Gaps closed so far
 
 | Gap | Action |
@@ -26,6 +33,7 @@
 | Missing MCP | `pascal-anything mcp` |
 | Agent discoverability | `llms.txt` |
 | README parity with upstream | Centered header, badges, agent paste + TIP, dual-license blurb, `docs/translations.md`; skip sponsors/Discord/npm/crates branding |
+| Verification culture (awesome-REA) | `AGENTS.md`, `CONTRIBUTING.md`, `scripts/validate_project.py`, FAQ, showcase, PR/issue templates |
 
 ## Next
 
@@ -33,3 +41,4 @@
 - `shadow` / `bench` / `known-diffs.jsonl`
 - Auto-merge into `~/.cursor/mcp.json`
 - Skill eval harness (upstream pattern)
+

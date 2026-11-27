@@ -37,6 +37,10 @@ jobs:
         if: runner.os == 'Windows'
         run: choco install freepascal -y
 
+      - name: Validate docs
+        if: runner.os == 'Linux'
+        run: python3 scripts/validate_project.py
+
       - name: Build (Unix)
         if: runner.os != 'Windows'
         run: |
@@ -45,6 +49,7 @@ jobs:
           ./bin/pascalanything version
           ./bin/pascalanything doctor
           ./bin/pascalanything help >/dev/null
+          python3 scripts/validate_project.py
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
@@ -53,6 +58,7 @@ jobs:
           ./bin/pascalanything.exe version
           ./bin/pascalanything.exe doctor
           ./bin/pascalanything.exe help | Out-Null
+
 
       - name: Demo gate (Unix)
         if: runner.os != 'Windows'

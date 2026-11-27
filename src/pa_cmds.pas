@@ -1043,10 +1043,12 @@ begin
   Say('  enable|disable [crate]');
   Say('  report [crate]');
   Say('  rules');
+  Say('  mcp                            MCP stdio server (JSON-RPC)');
   Say('  version | help');
   Say('');
   Say('Loop: analyze → bridge → record → port.pas → build → diff → gate');
   Result := 0;
 end;
+
 
 end.

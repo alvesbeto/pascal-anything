@@ -12,8 +12,9 @@ Reescreva seu app em Free Pascal / Lazarus e prove que o comportamento continua 
 </p>
 
 <p align="center">
-<b>Docs:</b> <a href="docs/how-it-works.md">como funciona</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a>
+<b>Docs:</b> <a href="docs/how-it-works.md">como funciona</a> · <a href="docs/faq.pt-BR.md">FAQ</a> · <a href="docs/showcase.md">showcase</a> · <a href="docs/SDD.md">SDD</a> · <a href="llms.txt">llms.txt</a> · <a href="CONTRIBUTING.md">contribuindo</a>
 </p>
+
 
 <p align="center"><a href="docs/translations.md">🌐 Outros idiomas</a> · <a href="README.md">English</a></p>
 
@@ -95,4 +96,5 @@ Licenciado sob [MIT](./LICENSE-MIT) ou [Apache-2.0](./LICENSE-APACHE), à sua es
 
 Salvo declaração explícita em contrário, qualquer contribuição que você envie de propósito para inclusão no pascal-anything, conforme a licença Apache-2.0, fica sob a dual license acima, sem termos adicionais.
 
-Inspirado em [rust-anything](https://github.com/erkamyaman/rust-anything) © [Erkam Yaman](https://github.com/erkamyaman). Este projeto não é afiliado oficialmente.
+Inspirado em [rust-anything](https://github.com/erkamyaman/rust-anything) © [Erkam Yaman](https://github.com/erkamyaman). Cultura de verificação e checagens bilíngues também se inspiram em [awesome-reverse-engineer-anything](https://github.com/AIshihzong/awesome-reverse-engineer-anything) (citação; este projeto é reescrita verificada por comportamento a partir de fonte, não REA). Sem afiliação oficial com nenhum dos dois.
+

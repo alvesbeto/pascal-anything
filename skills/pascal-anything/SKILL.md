@@ -15,9 +15,10 @@ Languages detected: TypeScript/JavaScript, Python, Go, Rust, PHP, Ruby, Java, Pa
 `--lang`. The steps are the same everywhere; the bridge scaffolds an FPC package under
 `pascal/<name>_pas/` with `src/port.pas` stubs and a `harness.lpr` for replaying cases.
 
-Tools: the `pascal-anything` CLI. If it is missing, ask the user to build it (`fpc` in `src/`) and
-run `pascal-anything setup`, then restart the agent. When a step fails because a runtime is missing,
-run `pascal-anything doctor`.
+Tools: the `pascal-anything` CLI (including `pascal-anything mcp` for MCP stdio). If it is missing,
+ask the user to build it (`fpc` in `src/`) and run `pascal-anything setup`, then restart the agent.
+When a step fails because a runtime is missing, run `pascal-anything doctor`.
+
 
 ## Only the slow part: `go`
 

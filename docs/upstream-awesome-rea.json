@@ -1,0 +1,23 @@
+{
+  "upstream": "https://github.com/AIshihzong/awesome-reverse-engineer-anything",
+  "role": "curated-list-inspiration",
+  "notes": "Not a product twin. Port verification culture, bilingual checks, CONTRIBUTING/AGENTS patterns, and evidence tables. Do not port REA/AI-RE binary tooling as product features. Updated by the hourly OpenBot routine awesome-rea-upstream-sync.",
+  "lastSeenSha": "b993b555c6d4867d44f95be8166c920762040f75",
+  "lastSeenMessage": "Add bridge-anything and the SCP: CB Remaster Android port; refresh new-this-week (#63)",
+  "lastSeenAt": "2026-11-26T13:49:12Z",
+  "lastCheckedAt": "2026-11-27T12:30:00Z",
+  "ported": [
+    "AGENTS.md verification tags and one-rule gate culture",
+    "CONTRIBUTING.md PR checklist",
+    "scripts/validate_project.py (bilingual parity + skill↔CLI)",
+    "docs/faq.md + docs/faq.pt-BR.md (REA vs behaviour-checked)",
+    "docs/showcase.md evidence table",
+    ".github/pull_request_template.md and bug issue template"
+  ],
+  "skip": [
+    "REA / Craft / binary reverse-engineering product features",
+    "awesome-list entry format as the main README",
+    "Lychee full link crawler (optional later)",
+    "Claiming affiliation beyond citation"
+  ]
+}
