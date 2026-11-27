@@ -1,0 +1,73 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            shell: bash
+          - os: macos-latest
+            shell: bash
+          - os: windows-latest
+            shell: pwsh
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Free Pascal (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y fpc
+
+      - name: Install Free Pascal (macOS)
+        if: runner.os == 'macOS'
+        run: brew install fpc
+
+      - name: Install Free Pascal (Windows)
+        if: runner.os == 'Windows'
+        run: choco install freepascal -y
+
+      - name: Build (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x scripts/build.sh
+          ./scripts/build.sh
+          ./bin/pascalanything version
+          ./bin/pascalanything doctor
+          ./bin/pascalanything help >/dev/null
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          ./scripts/build.ps1
+          ./bin/pascalanything.exe version
+          ./bin/pascalanything.exe doctor
+          ./bin/pascalanything.exe help | Out-Null
+
+      - name: Demo gate (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          export PATH="$PWD/bin:$PATH"
+          DEMO=demo/slug-py
+          ./bin/pascalanything record "$DEMO/pascal/slug_pas" --inputs "$DEMO/inputs.jsonl"
+          ./bin/pascalanything build "$DEMO/pascal/slug_pas"
+          ./bin/pascalanything gate "$DEMO/pascal/slug_pas"
+
+      - name: Demo gate (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          $env:PATH = "$PWD\bin;$env:PATH"
+          $DEMO = "demo/slug-py"
+          ./bin/pascalanything.exe record "$DEMO/pascal/slug_pas" --inputs "$DEMO/inputs.jsonl"
+          ./bin/pascalanything.exe build "$DEMO/pascal/slug_pas"
+          ./bin/pascalanything.exe gate "$DEMO/pascal/slug_pas"

@@ -133,10 +133,10 @@ begin
     FindAllFiles(All, ARoot, True);
     for I := 0 to All.Count - 1 do
     begin
-      if (Pos(PathDelim + '.git' + PathDelim, All[I]) > 0) or
-         (Pos(PathDelim + 'node_modules' + PathDelim, All[I]) > 0) or
-         (Pos(PathDelim + 'vendor' + PathDelim, All[I]) > 0) or
-         (Pos(PathDelim + 'pascal' + PathDelim, All[I]) > 0) then
+      if PathHasSegment(All[I], '.git') or
+         PathHasSegment(All[I], 'node_modules') or
+         PathHasSegment(All[I], 'vendor') or
+         PathHasSegment(All[I], 'pascal') then
         Continue;
       Ext := LowerCase(ExtractFileExt(All[I]));
       if Exts.IndexOf(Ext) >= 0 then
@@ -190,25 +190,43 @@ var
     end;
   end;
 
+var
+  Py, Laz: string;
 begin
   Ok := True;
-  Say(AppName + ' doctor ' + AppVersion);
-  Check('fpc', 'fpc', 'install Free Pascal (tarball under ~/.local/bin is fine)');
-  Check('ppcx64', 'ppcx64', 'ships with FPC; put ~/.local/lib/fpc/3.2.2 on PATH');
-  if Which('lazbuild') <> '' then
-    Say('[ok] lazbuild: ' + Which('lazbuild'))
-  else if FileExists(ExpandFileName('~/.local/fpclaz/lazarus/lazbuild')) then
-    Say('[ok] lazbuild: ~/.local/fpclaz/lazarus/lazbuild (fpclazup)')
+  Say(AppName + ' doctor ' + AppVersion + ' (' + HostPlatform + ')');
+  Check('fpc', 'fpc', 'install Free Pascal for your OS (see README / docs/platforms.md)');
+{$IFDEF CPUX86_64}
+  Check('ppcx64', 'ppcx64', 'ships with FPC; put the FPC bin dir on PATH');
+{$ENDIF}
+{$IFDEF CPUAARCH64}
+  if Which('ppca64') <> '' then
+    Say('[ok] ppca64: ' + Which('ppca64'))
+  else if Which('ppcarm64') <> '' then
+    Say('[ok] ppcarm64: ' + Which('ppcarm64'))
   else
-    Say('[warn] lazbuild — fpclazup under ~/.local/fpclaz, or: sudo apt install lazarus');
+  begin
+    Say('[missing] aarch64 code generator (ppca64) — install matching FPC');
+    Ok := False;
+  end;
+{$ENDIF}
+  Laz := Which('lazbuild');
+  if Laz <> '' then
+    Say('[ok] lazbuild: ' + Laz)
+  else if FileExists(PathJoin3(PathJoin3(UserHomeDir, '.local', 'fpclaz'), 'lazarus',
+            WithExeSuffix('lazbuild'))) then
+    Say('[ok] lazbuild (fpclazup under ~/.local/fpclaz)')
+  else
+    Say('[warn] lazbuild — optional; install Lazarus for your OS');
   if Which('node') <> '' then
     Say('[ok] node: ' + Which('node'))
   else
     Say('[warn] node — useful when recording TypeScript/JavaScript apps');
-  if Which('python3') <> '' then
-    Say('[ok] python3: ' + Which('python3'))
+  Py := FindPython;
+  if Py <> '' then
+    Say('[ok] python: ' + Py)
   else
-    Say('[warn] python3 — useful when recording Python apps');
+    Say('[warn] python — useful when recording Python apps (python3 or python)');
   if Ok then
   begin
     Say('Minimum CLI environment looks good.');
@@ -227,10 +245,10 @@ var
   SkillSrc: string;
   SelfBin, McpJson: string;
 begin
-  Home := GetEnvironmentVariable('HOME');
-  if Home = '' then
-    Home := ExpandFileName('~');
+  Home := UserHomeDir;
   SelfBin := Which(AppName);
+  if SelfBin = '' then
+    SelfBin := Which(WithExeSuffix('pascalanything'));
   if SelfBin = '' then
     SelfBin := AbsolutePath(ParamStr(0));
 
@@ -537,15 +555,20 @@ function FindRecordPythonScript: string;
 var
   Candidates: array[0..3] of string;
   I: Integer;
-  Home: string;
+  EnvHome: string;
 begin
-  Home := GetEnvironmentVariable('HOME');
-  Candidates[0] := PathJoin(ExtractFilePath(ParamStr(0)), '../scripts/record_python.py');
+  EnvHome := GetEnvironmentVariable('PASCAL_ANYTHING_HOME');
+  Candidates[0] := PathJoin(ExtractFilePath(ParamStr(0)), PathJoin('..', 'scripts/record_python.py'));
   Candidates[1] := PathJoin(GetCurrentDir, 'scripts/record_python.py');
-  Candidates[2] := PathJoin(Home, 'Documentos/dev/Repositorios/pascal-anything/scripts/record_python.py');
-  Candidates[3] := '/home/beto/Documentos/dev/Repositorios/pascal-anything/scripts/record_python.py';
+  Candidates[2] := PathJoin(GetCurrentDir, PathJoin('..', 'scripts/record_python.py'));
+  if EnvHome <> '' then
+    Candidates[3] := PathJoin(EnvHome, 'scripts/record_python.py')
+  else
+    Candidates[3] := '';
   for I := 0 to High(Candidates) do
   begin
+    if Candidates[I] = '' then
+      Continue;
     Result := ExpandFileName(Candidates[I]);
     if FileExists(Result) then
       Exit;
@@ -584,7 +607,7 @@ begin
     if (Lang = 'python') and (Root <> '') and (UnitPath <> '') then
     begin
       Script := FindRecordPythonScript;
-      if (Script <> '') and (Which('python3') <> '') then
+      if (Script <> '') and (FindPython <> '') then
       begin
         SetLength(Args, 9);
         Args[0] := Script;
@@ -602,7 +625,7 @@ begin
           Args[9] := '--inputs';
           Args[10] := AbsolutePath(InputsFile);
         end;
-        if RunCapture('python3', Args, OutS, ErrS, Code, Root) and (Code = 0) then
+        if RunCapture(FindPython, Args, OutS, ErrS, Code, Root) and (Code = 0) then
         begin
           Cases := TStringList.Create;
           try
@@ -715,10 +738,10 @@ begin
     SayErr('run record first');
     Exit(1);
   end;
-  BinHarness := PathJoin3(Crate, 'bin', 'harness');
-  if not FileExists(BinHarness) then
-    BinHarness := PathJoin(Crate, 'harness');
-  if not FileExists(BinHarness) then
+  BinHarness := ResolveBinary(PathJoin3(Crate, 'bin', 'harness'));
+  if BinHarness = '' then
+    BinHarness := ResolveBinary(PathJoin(Crate, 'harness'));
+  if BinHarness = '' then
   begin
     SayErr('harness binary missing — run build');
     Exit(1);
@@ -836,7 +859,7 @@ begin
   begin
     PortSrc := ReadTextFile(PortPath);
     HasTodo := (Pos('TODO', PortSrc) > 0);
-    GateCheck('ported', not HasTodo, 'marcadores TODO em port.pas',
+    GateCheck('ported', not HasTodo, 'no TODO markers in port.pas',
       'implement remaining stubbed functions', Failures);
   end;
 
@@ -845,11 +868,11 @@ begin
     'pascal-anything record ' + Crate, Failures);
 
   GateCheck('build',
-    FileExists(PathJoin3(Crate, 'bin', 'harness')) or FileExists(PathJoin(Crate, 'harness')),
+    ResolveBinary(PathJoin3(Crate, 'bin', 'harness')) <> '',
     'harness binary', 'pascal-anything build ' + Crate, Failures);
 
   if FileExists(CasesPath) and
-     (FileExists(PathJoin3(Crate, 'bin', 'harness')) or FileExists(PathJoin(Crate, 'harness'))) then
+     (ResolveBinary(PathJoin3(Crate, 'bin', 'harness')) <> '') then
   begin
     if CmdDiff(Crate) = 0 then
       GateCheck('behavior', True, 'all cases match', '', Failures)

@@ -49,10 +49,6 @@ pascal-anything gate pascal/<unit>_pas
 
 ## Install
 
-```sh
-export PATH="$HOME/.local/bin:$HOME/.local/lib/fpc/3.2.2:$PATH"
-cd /path/to/pascal-anything/src && fpc -O2 -Fu. -FE../bin pascalanything.lpr
-ln -sfn "$(pwd)/../bin/pascalanything" "$HOME/.local/bin/pascal-anything"
-pascal-anything setup
-pascal-anything doctor
-```
+Linux/macOS: `./scripts/build.sh` then `pascal-anything setup` and `pascal-anything doctor`.  
+Windows: `.\scripts\build.ps1` (produces `bin/pascalanything.exe`).  
+Requires Free Pascal on PATH; works on Windows, Linux, and macOS (`docs/platforms.md`).

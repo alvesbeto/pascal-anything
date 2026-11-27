@@ -9,7 +9,7 @@ uses
 
 const
   AppName = 'pascal-anything';
-  AppVersion = '0.2.1';
+  AppVersion = '0.3.0';
   SchemaBridge = 'pascal-anything/bridge@1';
   SchemaAnalyze = 'pascal-anything/analyze@1';
   CasesFileName = 'cases.jsonl';
@@ -40,6 +40,13 @@ function SanitizeIdent(const S: string): string;
 function DetectLang(const ARoot: string): string;
 function StartsWithPath(const AFull, APrefix: string): Boolean;
 function SplitPathEnv(const APathEnv: string): TStringList;
+function UserHomeDir: string;
+function ExeSuffix: string;
+function WithExeSuffix(const ABase: string): string;
+function ResolveBinary(const APathOrName: string): string;
+function PathHasSegment(const APath, ASegment: string): Boolean;
+function FindPython: string;
+function HostPlatform: string;
 
 implementation
 
@@ -128,6 +135,46 @@ begin
   Result := DirectoryExists(APath);
 end;
 
+function UserHomeDir: string;
+begin
+  Result := GetEnvironmentVariable('HOME');
+  if Result = '' then
+    Result := GetEnvironmentVariable('USERPROFILE');
+  if Result = '' then
+    Result := GetUserDir;
+end;
+
+function ExeSuffix: string;
+begin
+{$IFDEF WINDOWS}
+  Result := '.exe';
+{$ELSE}
+  Result := '';
+{$ENDIF}
+end;
+
+function WithExeSuffix(const ABase: string): string;
+begin
+  if (ExeSuffix <> '') and
+     (LowerCase(ExtractFileExt(ABase)) <> ExeSuffix) then
+    Result := ABase + ExeSuffix
+  else
+    Result := ABase;
+end;
+
+function HostPlatform: string;
+begin
+{$IFDEF WINDOWS}
+  Result := 'windows';
+{$ELSE}
+  {$IFDEF DARWIN}
+  Result := 'macos';
+  {$ELSE}
+  Result := 'linux';
+  {$ENDIF}
+{$ENDIF}
+end;
+
 function SplitPathEnv(const APathEnv: string): TStringList;
 var
   I, Start: Integer;
@@ -147,28 +194,120 @@ begin
   end;
 end;
 
+function FileExistsOnPath(const ADir, AName: string): string;
+var
+  Candidate: string;
+{$IFDEF WINDOWS}
+  Exts: TStringList;
+  I: Integer;
+  Base, Ext: string;
+{$ENDIF}
+begin
+  Result := '';
+  Candidate := PathJoin(ADir, AName);
+  if FileExists(Candidate) then
+    Exit(Candidate);
+{$IFDEF WINDOWS}
+  if ExtractFileExt(AName) <> '' then
+    Exit;
+  Exts := TStringList.Create;
+  try
+    Exts.Delimiter := ';';
+    Exts.StrictDelimiter := True;
+    Exts.DelimitedText := GetEnvironmentVariable('PATHEXT');
+    if Exts.Count = 0 then
+    begin
+      Exts.Add('.EXE');
+      Exts.Add('.CMD');
+      Exts.Add('.BAT');
+      Exts.Add('.COM');
+    end;
+    Base := AName;
+    for I := 0 to Exts.Count - 1 do
+    begin
+      Ext := Exts[I];
+      if Ext = '' then
+        Continue;
+      if Ext[1] <> '.' then
+        Ext := '.' + Ext;
+      Candidate := PathJoin(ADir, Base + Ext);
+      if FileExists(Candidate) then
+        Exit(Candidate);
+    end;
+  finally
+    Exts.Free;
+  end;
+{$ELSE}
+  Candidate := PathJoin(ADir, AName);
+  if FileExists(Candidate) then
+    Result := Candidate;
+{$ENDIF}
+end;
+
 function Which(const ACmd: string): string;
 var
   Parts: TStringList;
   I: Integer;
-  Candidate: string;
+  Found: string;
 begin
   Result := '';
-  if (Pos(PathDelim, ACmd) > 0) and FileExists(ACmd) then
-    Exit(ACmd);
+  if ACmd = '' then
+    Exit;
+  if (Pos(PathDelim, ACmd) > 0) or (Pos('/', ACmd) > 0) or (Pos('\', ACmd) > 0) then
+  begin
+    if FileExists(ACmd) then
+      Exit(ACmd);
+    if FileExists(WithExeSuffix(ACmd)) then
+      Exit(WithExeSuffix(ACmd));
+    Exit;
+  end;
   Parts := SplitPathEnv(GetEnvironmentVariable('PATH'));
   try
     for I := 0 to Parts.Count - 1 do
     begin
       if Parts[I] = '' then
         Continue;
-      Candidate := PathJoin(Parts[I], ACmd);
-      if FileExists(Candidate) then
-        Exit(Candidate);
+      Found := FileExistsOnPath(Parts[I], ACmd);
+      if Found <> '' then
+        Exit(Found);
     end;
   finally
     Parts.Free;
   end;
+end;
+
+function ResolveBinary(const APathOrName: string): string;
+begin
+  Result := '';
+  if APathOrName = '' then
+    Exit;
+  if FileExists(APathOrName) then
+    Exit(APathOrName);
+  if FileExists(WithExeSuffix(APathOrName)) then
+    Exit(WithExeSuffix(APathOrName));
+  Result := Which(APathOrName);
+  if Result = '' then
+    Result := Which(WithExeSuffix(APathOrName));
+end;
+
+function FindPython: string;
+begin
+  Result := Which('python3');
+  if Result = '' then
+    Result := Which('python');
+{$IFDEF WINDOWS}
+  if Result = '' then
+    Result := Which('py');
+{$ENDIF}
+end;
+
+function PathHasSegment(const APath, ASegment: string): Boolean;
+var
+  Norm, Needle: string;
+begin
+  Norm := StringReplace(APath, '\', '/', [rfReplaceAll]);
+  Needle := '/' + ASegment + '/';
+  Result := Pos(Needle, '/' + Norm + '/') > 0;
 end;
 
 function RunCapture(const AExe: string; const AArgs: array of string;
@@ -184,7 +323,7 @@ begin
   AStderr := '';
   AExit := -1;
   Result := False;
-  Resolved := Which(AExe);
+  Resolved := ResolveBinary(AExe);
   if Resolved = '' then
   begin
     AStderr := 'command not found: ' + AExe;
@@ -202,14 +341,8 @@ begin
     P.Options := [poUsePipes, poWaitOnExit];
     try
       P.Execute;
-      if P.Output.NumBytesAvailable > 0 then
-        OutS.CopyFrom(P.Output, P.Output.NumBytesAvailable)
-      else
-        OutS.CopyFrom(P.Output, 0);
-      if P.Stderr.NumBytesAvailable > 0 then
-        ErrS.CopyFrom(P.Stderr, P.Stderr.NumBytesAvailable)
-      else
-        ErrS.CopyFrom(P.Stderr, 0);
+      OutS.CopyFrom(P.Output, 0);
+      ErrS.CopyFrom(P.Stderr, 0);
       AStdout := OutS.DataString;
       AStderr := ErrS.DataString;
       AExit := P.ExitCode;
@@ -254,10 +387,20 @@ begin
 end;
 
 function StartsWithPath(const AFull, APrefix: string): Boolean;
+{$IFDEF WINDOWS}
+var
+  F, P: string;
+begin
+  F := LowerCase(StringReplace(AFull, '/', '\', [rfReplaceAll]));
+  P := LowerCase(StringReplace(APrefix, '/', '\', [rfReplaceAll]));
+  Result := (Length(F) >= Length(P)) and (Copy(F, 1, Length(P)) = P);
+end;
+{$ELSE}
 begin
   Result := (Length(AFull) >= Length(APrefix)) and
     (Copy(AFull, 1, Length(APrefix)) = APrefix);
 end;
+{$ENDIF}
 
 function RelPath(const ARoot, APath: string): string;
 var

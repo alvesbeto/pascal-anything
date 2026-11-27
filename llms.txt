@@ -4,15 +4,12 @@
 
 ## Install
 
-```sh
-export PATH="$HOME/.local/bin:$HOME/.local/lib/fpc/3.2.2:$PATH"
-cd src && fpc -O2 -Fu. -FE../bin pascalanything.lpr
-ln -sfn "$(pwd)/../bin/pascalanything" "$HOME/.local/bin/pascal-anything"
-pascal-anything setup
-pascal-anything doctor
-```
+Linux/macOS: `./scripts/build.sh` then `pascal-anything setup` and `pascal-anything doctor`.  
+Windows: `.\scripts\build.ps1` then the same commands (`pascalanything.exe` if the shim is not on PATH).
 
-Lazarus (optional, headless): `fpclazup --fpcURL=stable --lazURL=stable --installdir=$HOME/.local/fpclaz --fpcsplit --noconfirm`
+Needs Free Pascal on PATH. Platforms: Windows, Linux, macOS — see docs/platforms.md.
+
+Lazarus (optional): install for your OS, or on Unix `fpclazup` into `$HOME/.local/fpclaz`.
 
 ## Prompt for a coding agent
 

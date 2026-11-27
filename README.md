@@ -29,13 +29,23 @@ Install Pascal Anything: build with fpc under src/, put bin/pascalanything on PA
 
 Or install it yourself:
 
+**Linux / macOS**
+
 ```sh
-export PATH="$HOME/.local/bin:$HOME/.local/lib/fpc/3.2.2:$PATH"
-cd src && fpc -O2 -Fu. -FE../bin pascalanything.lpr
-ln -sfn "$(pwd)/../bin/pascalanything" "$HOME/.local/bin/pascal-anything"
+./scripts/build.sh
 pascal-anything doctor
 pascal-anything setup           # skill + MCP snippet for Claude Code, Cursor, …
 ```
+
+**Windows (PowerShell)**
+
+```powershell
+.\scripts\build.ps1
+pascal-anything doctor
+pascal-anything setup
+```
+
+Needs Free Pascal on `PATH`. Details: [`docs/platforms.md`](docs/platforms.md).
 
 > [!TIP]
 > **Agents:** read [`llms.txt`](llms.txt) for install steps, every command, and the porting workflow.
@@ -61,9 +71,12 @@ More detail: [`docs/how-it-works.md`](docs/how-it-works.md).
 
 ## Requirements
 
-- **Free Pascal 3.2+** — installable under `~/.local` without root
-- **Lazarus / lazbuild** (optional for GUI) — `sudo apt install lazarus`, or headless `fpclazup` (see [`docs/research.md`](docs/research.md))
-- Original-app runtimes (`node`, `python3`, …) when recording behavior
+- **OS:** Windows, Linux, or macOS
+- **Free Pascal 3.2+** on `PATH` (see [`docs/platforms.md`](docs/platforms.md))
+- **Lazarus / lazbuild** (optional for GUI)
+- Original-app runtimes (`node`, `python3` / `python`, …) when recording behavior
+
+CI builds all three OSes via GitHub Actions.
 
 ## Demo
 
