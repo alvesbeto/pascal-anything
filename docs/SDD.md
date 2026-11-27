@@ -19,4 +19,5 @@ CLI + agent skills to migrate any codebase to Free Pascal/Lazarus with behaviora
 - v0.1.0: base CLI + slug demo (gate pass)
 - v0.2.0: real Python `record`, MCP stdio, `llms.txt`, research notes, Lazarus via apt/fpclazup
 - v0.2.1: English-first docs/CLI; PT-BR README cross-link
+- OpenBot routine `rust-anything-upstream-sync`: hourly (America/Sao_Paulo :15), thread; tracker `docs/upstream-rust-anything.json`
 - Pending: TS/JS/Go recorders, shadow/bench/fuzz, Cursor MCP merge, skill-eval
