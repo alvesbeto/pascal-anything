@@ -5,7 +5,7 @@
   "lastSeenSha": "b993b555c6d4867d44f95be8166c920762040f75",
   "lastSeenMessage": "Add bridge-anything and the SCP: CB Remaster Android port; refresh new-this-week (#63)",
   "lastSeenAt": "2026-11-26T13:49:12Z",
-  "lastCheckedAt": "2026-11-27T12:30:00Z",
+  "lastCheckedAt": "2026-11-28T15:45:37Z",
   "ported": [
     "AGENTS.md verification tags and one-rule gate culture",
     "CONTRIBUTING.md PR checklist",

@@ -12,9 +12,23 @@ import argparse
 import importlib.util
 import inspect
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Callable
+
+
+SECRET_NAME_PARTS = (
+    "SECRET",
+    "TOKEN",
+    "PASSWORD",
+    "PASSWD",
+    "PASSPHRASE",
+    "CREDENTIAL",
+    "API_KEY",
+    "PRIVATE_KEY",
+)
+MIN_SECRET_CHARS = 8
 
 
 EDGE_STRINGS = [
@@ -162,6 +176,54 @@ def load_inputs(path: Path, fns: dict[str, Callable]) -> list[dict[str, Any]]:
     return rows
 
 
+def find_recorded_secrets(
+    cases: list[dict[str, Any]], env: dict[str, str] | None = None
+) -> list[tuple[str, list[str]]]:
+    """Find environment variables whose secret value appears in recorded cases.
+
+    Returns a list of (var_name, [fn_names]) without exposing the secret value.
+    """
+    if env is None:
+        env = dict(os.environ)
+
+    def value_in_obj(obj: Any, secret: str) -> bool:
+        if isinstance(obj, str):
+            return secret in obj
+        if isinstance(obj, dict):
+            return any(secret in str(k) or value_in_obj(v, secret) for k, v in obj.items())
+        if isinstance(obj, (list, tuple, set)):
+            return any(value_in_obj(v, secret) for v in obj)
+        return False
+
+    matches: list[tuple[str, list[str]]] = []
+    for name, val in env.items():
+        if len(val) < MIN_SECRET_CHARS:
+            continue
+        upper = name.upper()
+        if not any(part in upper for part in SECRET_NAME_PARTS):
+            continue
+        fns_with_secret: list[str] = []
+        for c in cases:
+            fn_name = str(c.get("fn", "?"))
+            if value_in_obj(c, val):
+                if fn_name not in fns_with_secret:
+                    fns_with_secret.append(fn_name)
+        if fns_with_secret:
+            matches.append((name, fns_with_secret))
+    matches.sort(key=lambda item: item[0])
+    return matches
+
+
+def remove_or_empty(path: Path) -> None:
+    try:
+        path.unlink(missing_ok=True)
+    except Exception:
+        try:
+            path.write_text("", encoding="utf-8")
+        except Exception:
+            pass
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", required=True)
@@ -184,6 +246,15 @@ def main() -> None:
         cases.extend(generate_cases(fns, args.count))
 
     out = Path(args.out)
+    secrets = find_recorded_secrets(cases)
+    if secrets:
+        remove_or_empty(out)
+        details = ", ".join(f"{name} in {', '.join(fns)}" for name, fns in secrets)
+        raise SystemExit(
+            f"record refused: cases hold secret from environment variable {details}. "
+            "Record with env -u NAME or change inputs."
+        )
+
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8") as fh:
         for row in cases:

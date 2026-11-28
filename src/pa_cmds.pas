@@ -606,10 +606,84 @@ begin
   Result := '';
 end;
 
+const
+  SECRET_NAME_PARTS: array[0..7] of string = (
+    'SECRET', 'TOKEN', 'PASSWORD', 'PASSWD', 'PASSPHRASE',
+    'CREDENTIAL', 'API_KEY', 'PRIVATE_KEY'
+  );
+  MIN_SECRET_CHARS = 8;
+
+procedure RemoveOrEmptyFile(const APath: string);
+var
+  F: TextFile;
+begin
+  if not FileExists(APath) then
+    Exit;
+  if not DeleteFile(APath) then
+  begin
+    try
+      AssignFile(F, APath);
+      Rewrite(F);
+      CloseFile(F);
+    except
+      { best effort empty }
+    end;
+  end;
+end;
+
+function FileHoldsSecret(const APath: string; out SecretVarName: string): Boolean;
+var
+  TotalEnv, I, J: Integer;
+  EnvStr, VarName, VarVal, VarUpper, Content: string;
+  CasesFile: TStringList;
+begin
+  Result := False;
+  SecretVarName := '';
+  if not FileExists(APath) then
+    Exit;
+
+  TotalEnv := GetEnvironmentVariableCount;
+  CasesFile := TStringList.Create;
+  try
+    CasesFile.LoadFromFile(APath);
+    Content := CasesFile.Text;
+    if Content = '' then
+      Exit;
+
+    for I := 1 to TotalEnv do
+    begin
+      EnvStr := GetEnvironmentString(I);
+      J := Pos('=', EnvStr);
+      if J <= 1 then
+        Continue;
+      VarName := Copy(EnvStr, 1, J - 1);
+      VarVal := Copy(EnvStr, J + 1, Length(EnvStr));
+      if Length(VarVal) < MIN_SECRET_CHARS then
+        Continue;
+      VarUpper := UpperCase(VarName);
+      for J := 0 to High(SECRET_NAME_PARTS) do
+      begin
+        if Pos(SECRET_NAME_PARTS[J], VarUpper) > 0 then
+        begin
+          if Pos(VarVal, Content) > 0 then
+          begin
+            SecretVarName := VarName;
+            Result := True;
+            Exit;
+          end;
+          Break;
+        end;
+      end;
+    end;
+  finally
+    CasesFile.Free;
+  end;
+end;
+
 function CmdRecord(const ACrate: string; Count: Integer;
   const InputsFile: string): Integer;
 var
-  Crate, Root, UnitPath, Lang, OutPath, Script, OutS, ErrS: string;
+  Crate, Root, UnitPath, Lang, OutPath, Script, OutS, ErrS, SecretVar: string;
   Manifest: TJSONObject;
   Cases: TStringList;
   Code: Integer;
@@ -657,6 +731,13 @@ begin
         end;
         if RunCapture(FindPython, Args, OutS, ErrS, Code, Root) and (Code = 0) then
         begin
+          if FileExists(OutPath) and FileHoldsSecret(OutPath, SecretVar) then
+          begin
+            RemoveOrEmptyFile(OutPath);
+            SayErr('record refused: cases hold secret from environment variable ' +
+              SecretVar + '. Record with env -u ' + SecretVar + ' or change inputs.');
+            Exit(1);
+          end;
           Cases := TStringList.Create;
           try
             if FileExists(OutPath) then
@@ -675,7 +756,11 @@ begin
           end;
         end
         else
+        begin
+          if FileExists(OutPath) and FileHoldsSecret(OutPath, SecretVar) then
+            RemoveOrEmptyFile(OutPath);
           SayErr('Python recorder failed: ' + ErrS + OutS);
+        end;
       end;
     end;
 
@@ -691,6 +776,13 @@ begin
           '. Replace ok with returns from the original.');
       end;
       Cases.SaveToFile(OutPath);
+      if FileHoldsSecret(OutPath, SecretVar) then
+      begin
+        RemoveOrEmptyFile(OutPath);
+        SayErr('record refused: cases hold secret from environment variable ' +
+          SecretVar + '. Record with env -u ' + SecretVar + ' or change inputs.');
+        Exit(1);
+      end;
       Manifest.Strings['recorded_at'] := FormatDateTime('yyyy-mm-dd"T"hh:nn:ss', Now);
       Manifest.Integers['case_count'] := Cases.Count;
       WriteManifest(Crate, Manifest);

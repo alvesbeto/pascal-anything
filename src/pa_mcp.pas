@@ -230,6 +230,11 @@ begin
     ResultObj.Add('protocolVersion', ProtocolVersion);
     ResultObj.Add('capabilities', Caps);
     ResultObj.Add('serverInfo', ServerInfo);
+    ResultObj.Add('instructions',
+      'Rewrite TypeScript/JavaScript, Python, C, Go, Ruby, Java, Kotlin, PHP, C# or ' +
+      'PowerShell apps in Free Pascal/Lazarus, one verified piece at a time. Loop per unit: ' +
+      'analyze -> bridge -> record -> (port src/port.pas) -> build -> diff -> gate. ' +
+      'Never mark a port done before gate passes. Prefer official RTL/FCL and LCL.');
     Exit(OkResult(Id, ResultObj));
   end;
 

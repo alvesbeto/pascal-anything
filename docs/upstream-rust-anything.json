@@ -1,8 +1,8 @@
 {
   "upstream": "https://github.com/erkamyaman/rust-anything",
-  "lastSeenSha": "36c426ee391a99c3521215b543a3b812073a1966",
-  "lastSeenMessage": "bridge: keep a function that reaches a class object through calls (#745)",
-  "lastSeenAt": "2026-11-28T09:07:34Z",
-  "lastCheckedAt": "2026-11-28T11:10:35Z",
-  "notes": "Evaluated 32 upstream commits up to 36c426ee391a99c3521215b543a3b812073a1966. Ported Python pathlib.Path string serialization and required parameter preservation in record_python.py."
+  "lastSeenSha": "e4669f6c7d8b1adbf2c2cef2e4a1539571c04228",
+  "lastSeenMessage": "README: doctor, a safety note, more on how it works, and a commands table",
+  "lastSeenAt": "2026-11-28T16:09:11Z",
+  "lastCheckedAt": "2026-11-28T16:20:45Z",
+  "notes": "Evaluated 14 upstream commits up to e4669f6c7d8b1adbf2c2cef2e4a1539571c04228. Ported secret refusal in record/cases.jsonl (defense-in-depth across Python script and Pascal CLI) and updated MCP initialize instructions naming all supported languages."
 }
