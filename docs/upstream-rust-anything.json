@@ -1,8 +1,8 @@
 {
   "upstream": "https://github.com/erkamyaman/rust-anything",
-  "lastSeenSha": "a1e9509b31bd89e0cbf039e86a39ca338d2c67fe",
-  "lastSeenMessage": "Website: back to void.json and asset-bypass, deploy with wrangler (void deploy dropped the static-file bypass)",
-  "lastSeenAt": "2026-11-27T21:25:36Z",
-  "lastCheckedAt": "2026-11-27T23:53:00Z",
-  "notes": "Evaluated commit a1e9509b31bd89e0cbf039e86a39ca338d2c67fe; skipped upstream Cloudflare/wrangler website deployment."
+  "lastSeenSha": "36c426ee391a99c3521215b543a3b812073a1966",
+  "lastSeenMessage": "bridge: keep a function that reaches a class object through calls (#745)",
+  "lastSeenAt": "2026-11-28T09:07:34Z",
+  "lastCheckedAt": "2026-11-28T11:10:35Z",
+  "notes": "Evaluated 32 upstream commits up to 36c426ee391a99c3521215b543a3b812073a1966. Ported Python pathlib.Path string serialization and required parameter preservation in record_python.py."
 }

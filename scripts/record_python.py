@@ -54,10 +54,55 @@ def public_functions(mod) -> dict[str, Callable]:
     return out
 
 
-def call_case(fn: Callable, args: list[Any]) -> dict[str, Any]:
-    row: dict[str, Any] = {"fn": fn.__name__, "args": args}
+def serialize_value(val: Any) -> Any:
+    """Normalize values for JSON serialization.
+
+    pathlib.Path objects are serialized as path strings, not as raw objects or JSON reprs.
+    """
+    if isinstance(val, Path):
+        return str(val)
+    if isinstance(val, dict):
+        return {k: serialize_value(v) for k, v in val.items()}
+    if isinstance(val, (list, tuple)):
+        return [serialize_value(v) for v in val]
+    return val
+
+
+def required_param_count(fn: Callable) -> int:
+    """How many leading positional parameters of `fn` have no default."""
     try:
-        row["ok"] = fn(*args)
+        params = inspect.signature(fn).parameters.values()
+    except (TypeError, ValueError):
+        return 0
+    count = 0
+    for p in params:
+        if p.kind not in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD):
+            break
+        if p.default is not inspect.Parameter.empty:
+            break
+        count += 1
+    return count
+
+
+def call_args(fn: Callable, args: list[Any]) -> list[Any]:
+    """Prepare arguments for call: trailing undefined arguments are omitted so defaults apply.
+
+    A parameter without a default always receives its argument (e.g. None if undefined),
+    never leaving it out to prevent missing positional argument TypeErrors.
+    """
+    args = list(args)
+    keep = required_param_count(fn)
+    while len(args) > keep and args and args[-1] == {"$undefined": True}:
+        args.pop()
+    return [None if a == {"$undefined": True} else a for a in args]
+
+
+def call_case(fn: Callable, args: list[Any]) -> dict[str, Any]:
+    effective_args = call_args(fn, args)
+    row: dict[str, Any] = {"fn": fn.__name__, "args": serialize_value(effective_args)}
+    try:
+        res = fn(*effective_args)
+        row["ok"] = serialize_value(res)
     except Exception as exc:  # noqa: BLE001 — characterization
         row["err"] = f"{type(exc).__name__}: {exc}"
     return row
@@ -72,21 +117,30 @@ def generate_cases(fns: dict[str, Callable], count: int) -> list[dict[str, Any]]
     while len(cases) < count:
         name = names[i % len(names)]
         fn = fns[name]
-        sig = inspect.signature(fn)
-        params = [
-            p
-            for p in sig.parameters.values()
-            if p.kind
-            in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
-        ]
+        try:
+            sig = inspect.signature(fn)
+            params = [
+                p
+                for p in sig.parameters.values()
+                if p.kind
+                in (inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+            ]
+        except (TypeError, ValueError):
+            params = []
+
+        req_count = required_param_count(fn)
         if len(params) == 0:
             cases.append(call_case(fn, []))
-        elif len(params) == 1:
-            cases.append(call_case(fn, [EDGE_STRINGS[i % len(EDGE_STRINGS)]]))
         else:
+            include_defaults = (i % 2 == 1) or (req_count == len(params))
+            active_params = params if include_defaults else params[:req_count]
             args = []
-            for j, _p in enumerate(params):
-                args.append(EDGE_STRINGS[(i + j) % len(EDGE_STRINGS)])
+            for j, p in enumerate(active_params):
+                edge = EDGE_STRINGS[(i + j) % len(EDGE_STRINGS)]
+                if p.default is inspect.Parameter.empty and j >= 1 and (i + j) % 5 == 0:
+                    args.append(None)
+                else:
+                    args.append(edge)
             cases.append(call_case(fn, args))
         i += 1
     return cases
